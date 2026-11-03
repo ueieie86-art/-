@@ -1,1984 +1,2049 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Кликер нефтяной магнат</title>
     <style>
-        :root { 
-            --gold: #ffcc00; 
-            --bg: #0b0d0f; 
-            --card: #16191d; 
-            --text: #e0e0e0; 
-            --green: #00ff88; 
-            --red: #ff3366; 
-            --accent: #21262d; 
-            --uran: #39ff14;
-        }
-        
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-        }
-        
-        html, body { 
-            margin: 0; 
-            padding: 0; 
-            background: var(--bg); 
-            color: var(--text); 
-            overflow: hidden !important; 
-            height: 100%; 
-            width: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            touch-action: none !important;
-            overscroll-behavior: none !important;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-overflow-scrolling: none;
+        :root {
+            --gold: #f59e0b;
+            --gold-light: #fbbf24;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --green: #10b981;
+            --blue: #3b82f6;
+            --red: #ef4444;
+            --purple: #a855f7;
+            --gray: #64748b;
+            --cyan: #06b6d4;
+            --emerald: #059669;
+            --uran: #84cc16;
+            --space: #8b5cf6;
         }
 
-        #app { 
-            width: 100%; 
-            max-width: 500px; 
-            height: 100%; 
-            margin: 0 auto; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
+            user-select: none;
         }
 
-        header { 
-            padding: 8px 12px; 
-            background: linear-gradient(to bottom, #000, var(--bg)); 
-            border-bottom: 1px solid #333; 
-            z-index: 10; 
-            flex-shrink: 0; 
+        /* Верхняя панель */
+        .header {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 10px;
+            border-bottom: 2px solid var(--gold);
+            z-index: 10;
             position: relative;
         }
-        
-        .balance-glow { 
-            font-size: clamp(22px, 4vw, 34px);
-            font-weight: 900; 
-            color: var(--gold); 
-            text-align: center; 
-            text-shadow: 0 0 20px rgba(255,204,0,0.4); 
-            letter-spacing: -1px; 
-        }
-        
-        .top-grid { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 4px; 
-            margin-top: 6px; 
-        }
-        
-        .mini-card { 
-            background: var(--accent); 
-            padding: 4px 2px; 
-            border-radius: 6px; 
-            text-align: center; 
-            border: 1px solid #333; 
-        }
-        
-        .mini-card div { 
-            font-size: 7px; 
-            color: #888; 
-            text-transform: uppercase; 
-            margin-bottom: 1px; 
-        }
-        
-        .mini-card b { 
-            font-size: 9px; 
-            display: block; 
-            overflow: hidden; 
-            white-space: nowrap; 
-        }
 
-        .flex { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-        }
-
-        main { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 8px 10px 75px; 
-            -webkit-overflow-scrolling: touch; 
-            touch-action: pan-y;
-            overscroll-behavior: contain;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-        
-        main::-webkit-scrollbar {
-            display: none;
-            width: 0;
-            background: transparent;
-        }
-
-        .spacer-bottom { height: 15px; width: 100%; flex-shrink: 0; }
-
-        .page { display: none; animation: fadeIn 0.25s ease; }
-        .page.active { display: block; }
-        
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        .ui-card { 
-            background: var(--card); 
-            border-radius: 12px; 
-            padding: 10px 12px; 
-            margin-bottom: 10px; 
-            border: 1px solid #2a2f36; 
-        }
-
-        .btn-main { 
-            background: var(--gold); 
-            color: #000; 
-            border: none; 
-            padding: 8px 14px; 
-            border-radius: 8px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            box-shadow: 0 3px 0 #b38f00; 
-            font-size: clamp(11px, 1.8vw, 14px);
-        }
-        
-        .btn-main:active { transform: translateY(2px); box-shadow: 0 1px 0 #b38f00; }
-        .btn-main:disabled { background: #2c2c2c; color: #555; box-shadow: none; }
-
-        .click-zone { 
-            height: clamp(150px, 28vh, 250px);
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-        }
-        
-        .main-rig { 
-            width: clamp(115px, 24vw, 175px);
-            height: clamp(115px, 24vw, 175px);
-            background: #1c1f24; 
-            border: 5px solid var(--gold); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: clamp(40px, 9vw, 70px);
-            cursor: pointer; 
-            transition: 0.08s; 
-            position: relative; 
-            box-shadow: 0 0 25px rgba(255,204,0,0.15);
-        }
-        
-        .main-rig:active { transform: scale(0.92); }
-
-        .particle { 
-            position: absolute; 
-            color: var(--gold); 
-            font-weight: 900; 
-            pointer-events: none; 
-            animation: floatUp 0.8s ease-out forwards; 
-            font-size: clamp(15px, 2.5vw, 22px);
-            z-index: 99;
-            text-shadow: 0 2px 4px #000;
-        }
-        
-        @keyframes floatUp { to { transform: translateY(-80px); opacity: 0; } }
-
-        nav { 
-            position: absolute; 
-            bottom: 0; 
-            width: 100%; 
-            height: 65px; 
-            background: #121417; 
-            display: flex; 
-            border-top: 1px solid #2a2f36; 
-            z-index: 100; 
-            justify-content: space-around;
+        .sound-toggle {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
             align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 20;
         }
-        
-        .n-item { 
-            flex: 1;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 7px; 
-            color: #666; 
-            cursor: pointer; 
-            padding: 4px 2px;
+
+        .main-bal {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--gold-light);
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            margin-bottom: 8px;
         }
-        
-        .n-item.active { color: var(--gold); }
-        .n-item i { font-size: clamp(16px, 3vw, 22px); margin-bottom: 2px; font-style: normal; }
-        .n-item span { font-size: 7px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-        .items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px; }
-        .item-card { background: var(--accent); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid #333; }
-        .item-icon { font-size: 20px; margin-bottom: 3px; }
-        .item-name { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
-        .item-price { font-size: 9px; color: var(--gold); }
-        .item-owned { font-size: 8px; color: var(--green); margin-top: 2px; }
+        .res-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
 
-        .quest-card { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; border-left: 3px solid #444; }
-        .quest-card.done { border-left-color: var(--green); }
-        .quest-card b { font-size: 12px; }
-        .quest-card small { font-size: 10px; }
+        .res-card {
+            background: rgba(255,255,255,0.03);
+            padding: 5px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
 
-        .double-click-btn {
-            background: linear-gradient(45deg, #ff3366, #ffcc00);
+        .res-card small { font-size: 8px; color: var(--gray); display: block; text-transform: uppercase; }
+        .res-card span { font-size: 11px; font-weight: bold; }
+
+        /* Контент */
+        .content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 100px; }
+        .page { display: none; animation: fadeIn 0.2s ease; }
+        .page.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Кнопка бурения */
+        .drill-zone { text-align: center; margin: 10px 0; position: relative; }
+        .rig-btn {
+            width: 140px; height: 140px; border-radius: 50%;
+            background: radial-gradient(circle, #334155 0%, #0f172a 100%);
+            border: 5px solid var(--gold);
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: 0 auto; cursor: pointer; transition: 0.05s; position: relative;
+        }
+        .rig-btn:active { transform: scale(0.92); }
+        .rig-btn.uran { border-color: var(--uran); box-shadow: 0 0 25px rgba(132, 204, 22, 0.3); }
+
+        .boost-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--purple), #ec4899);
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 8px;
             font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-            text-align: center;
-            font-size: clamp(11px, 1.8vw, 14px);
-        }
-
-        .boost-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--green);
-            color: #000;
-            padding: 2px 8px;
-            border-radius: 10px;
             font-size: 11px;
-            font-weight: bold;
-            z-index: 5;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+            animation: pulse 2s infinite;
+        }
+        .boost-btn:disabled {
+            background: #334155;
+            color: #64748b;
+            box-shadow: none;
+            animation: none;
+            cursor: not-allowed;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .boost-timer { font-size: 11px; color: var(--green); text-align: center; margin-top: 3px; }
+        /* Карточки */
+        .card {
+            background: var(--card); border-radius: 14px; padding: 12px;
+            margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05);
+        }
 
-        .cooldown-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); color: white;
+        .item-row { display: flex; justify-content: space-between; align-items: center; }
+        .item-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .item-info p { font-size: 11px; color: var(--gray); }
+
+        .btn {
+            padding: 8px 14px; border-radius: 10px; border: none;
+            font-weight: bold; cursor: pointer; font-size: 12px;
+            background: var(--gold); color: #000; transition: 0.2s;
+        }
+        .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .btn-ad { background: linear-gradient(135deg, var(--purple), #ec4899); color: #fff; width: 100%; padding: 12px; font-size: 13px; margin-top: 5px; }
+
+        /* Биржа График */
+        .chart-box {
+            background: #090d16; border-radius: 10px; padding: 10px;
+            margin: 8px 0; border: 1px solid #1e293b;
+        }
+        canvas { width: 100%; height: 80px; display: block; }
+
+        /* Навигация */
+        .nav {
+            position: fixed; bottom: 0; width: 100%; height: 70px;
+            background: #1e293b; display: grid; grid-template-columns: repeat(9, 1fr);
+            border-top: 1px solid rgba(255,255,255,0.1); z-index: 100;
+            overflow-x: auto;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: var(--gray); font-size: 8px; font-weight: bold;
+            min-width: 42px; cursor: pointer;
+        }
+        .nav-item.active { color: var(--gold-light); }
+        .nav-item i { font-size: 16px; margin-bottom: 2px; font-style: normal; }
+
+        .floating {
+            position: absolute; pointer-events: none; color: var(--gold-light);
+            font-weight: bold; font-size: 18px; animation: floatUp 0.7s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-70px); } }
+
+        /* Стили для попапов с ползунком */
+        .popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; align-items: center;
+            justify-content: center; z-index: 1000;
+        }
+        .popup-overlay.active { display: flex; }
+        .popup-box {
+            background: var(--card); border-radius: 16px; padding: 20px;
+            width: 90%; max-width: 350px; border: 2px solid var(--gold);
+        }
+        .popup-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        .slider-container { margin: 20px 0; }
+        .slider {
+            width: 100%; height: 8px; border-radius: 5px;
+            background: #334155; outline: none; -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--gold); cursor: pointer;
+        }
+        .slider-info {
+            display: flex; justify-content: space-between;
+            margin-top: 10px; font-size: 13px; color: var(--gray);
+        }
+        .popup-buttons {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;
+        }
+
+        /* Ранги и квесты */
+        .rank-badge {
+            display: inline-block; padding: 6px 12px; border-radius: 20px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: #000; font-weight: bold; font-size: 12px; margin: 5px 0;
+        }
+        .quest-card {
+            background: rgba(59, 130, 246, 0.1); border-left: 4px solid var(--blue);
+            padding: 10px; border-radius: 8px; margin-bottom: 8px;
+        }
+        .quest-progress {
+            width: 100%; height: 6px; background: #334155;
+            border-radius: 3px; overflow: hidden; margin-top: 5px;
+        }
+        .quest-progress-bar {
+            height: 100%; background: var(--green); transition: width 0.3s;
+        }
+
+        /* Случайные события */
+        .event-popup {
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 2px solid var(--gold); border-radius: 16px; padding: 15px;
+            width: 90%; max-width: 350px; z-index: 999; display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: slideDown 0.3s ease;
+        }
+        .event-popup.active { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* Колесо фортуны (ИСПРАВЛЕННОЕ) */
+        .wheel-container {
+            display: flex; flex-direction: column; align-items: center;
+            margin: 20px 0;
+        }
+        .wheel-wrapper {
+            position: relative; width: 280px; height: 280px;
+        }
+        .wheel {
+            width: 280px; height: 280px; border-radius: 50%;
+            border: 8px solid var(--gold);
+            position: relative; overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: conic-gradient(
+                from 0deg,
+                #f59e0b 0deg 60deg,
+                #3b82f6 60deg 120deg,
+                #10b981 120deg 180deg,
+                #8b5cf6 180deg 240deg,
+                #ec4899 240deg 300deg,
+                #ef4444 300deg 360deg
+            );
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+        }
+        /* Точное центрирование надписей по секторам 30°, 90°, 150°, 210°, 270°, 330° */
+        .wheel-section {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0;
+            height: 0;
+            transform: rotate(var(--sector-angle));
+            pointer-events: none;
+        }
+        .wheel-section span {
+            position: absolute;
+            transform: translate(-50%, -92px);
+            font-weight: 900;
+            font-size: 13px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.85);
+            white-space: nowrap;
+        }
+        .wheel-pointer {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 15px solid transparent;
+            border-right: 15px solid transparent; border-top: 30px solid var(--red);
+            z-index: 10; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+        }
+        .wheel-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--gold); border: 4px solid #fff;
             display: flex; align-items: center; justify-content: center;
-            font-size: 24px; font-weight: bold; border-radius: 50%; z-index: 10;
+            font-size: 20px; z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
-
-        .promo-input {
-            width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #333;
-            background: var(--accent); color: white; margin-top: 8px; text-align: center; font-size: 13px;
-        }
-        
-        .promo-btn {
-            background: linear-gradient(45deg, #ff0066, #ff6600);
-            color: white; border: none; padding: 8px; border-radius: 6px;
-            font-weight: bold; cursor: pointer; margin-top: 8px; width: 100%; font-size: 13px;
-        }
-
-        .wheel-wrapper { position: relative; width: clamp(180px, 45vw, 260px); height: clamp(180px, 45vw, 260px); margin: 10px auto; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; position: relative; overflow: hidden; border: 6px solid var(--gold); background: var(--card); transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1); }
-        .wheel-segment { position: absolute; width: 50%; height: 50%; transform-origin: bottom right; left: 0; top: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; box-sizing: border-box; }
-        .wheel-segment-content { transform: rotate(45deg); font-size: clamp(8px, 1.5vw, 11px); font-weight: bold; color: #000; }
-        .wheel-center { position: absolute; width: 50px; height: 50px; background: var(--gold); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #000; border: 3px solid #000; }
-        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 26px; height: 26px; background: var(--red); clip-path: polygon(50% 0%, 0% 100%, 100% 100%); z-index: 20; }
-        .wheel-btn { background: linear-gradient(45deg, #ff3366, #ffcc00); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 10px; width: 100%; max-width: 280px; }
-        .vip-wheel-btn { background: linear-gradient(45deg, #9d00ff, #ff00ff); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; font-size: 13px; }
-        .wheel-stats { display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: #888; }
-
-        .uran-click-zone { height: clamp(130px, 22vh, 190px); display: flex; align-items: center; justify-content: center; position: relative; }
-        .uran-rig { width: clamp(95px, 20vw, 145px); height: clamp(95px, 20vw, 145px); background: radial-gradient(circle at 30% 30%, #39ff14, #00aa00); border: 5px solid var(--uran); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: clamp(36px, 7vw, 56px); cursor: pointer; transition: 0.1s; position: relative; color: white; text-shadow: 0 0 20px black; }
-        .uran-rig:active { transform: scale(0.92); }
-        .uran-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; text-align: center; }
-        .uran-stat-card { background: var(--accent); padding: 6px; border-radius: 8px; border: 1px solid var(--uran); }
-        .uran-stat-value { color: var(--uran); font-weight: bold; font-size: clamp(13px, 2vw, 16px); }
-
-        .slider-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); border: 4px solid var(--gold); border-radius: 16px; padding: 20px; z-index: 10000; text-align: center; min-width: 280px; max-width: 90%; color: white; }
-        .slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #333; border-radius: 5px; outline: none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: var(--gold); border-radius: 50%; cursor: pointer; }
-        .slider-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .slider-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .slider-btn.confirm { background: var(--green); color: black; }
-        .slider-btn.cancel { background: var(--red); color: white; }
-
-        .leaderboard-section { margin-top: 15px; }
-        .leaderboard-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--gold); }
-        .leaderboard-header h3 { color: var(--gold); font-size: 15px; margin: 0; flex: 1; }
-        .leaderboard-refresh { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); border: 2px solid var(--gold); color: var(--gold); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
-        .leaderboard-item { background: var(--accent); border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; border: 1px solid #333; margin-bottom: 4px; }
-        .leaderboard-item.top-1 { border: 2px solid var(--gold); background: linear-gradient(45deg, var(--accent), #2a2f36); }
-        .leaderboard-item.top-2 { border: 2px solid #c0c0c0; }
-        .leaderboard-item.top-3 { border: 2px solid #cd7f32; }
-        .leaderboard-rank { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
-        .leaderboard-info { flex: 1; min-width: 0; }
-        .leaderboard-name { font-size: 12px; font-weight: bold; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .leaderboard-stats { font-size: 9px; color: #888; display: flex; gap: 8px; flex-wrap: wrap; }
-        .leaderboard-money { color: var(--green); font-weight: bold; }
-        .leaderboard-oil { color: var(--gold); }
-        .leaderboard-usd { color: #00ccff; }
-        .leaderboard-copy { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,204,0,0.1); border: 1px solid var(--gold); color: var(--gold); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; flex-shrink: 0; }
-
-        .prize-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); border: 4px solid var(--gold); border-radius: 16px; padding: 20px; z-index: 1000; text-align: center; min-width: 260px; max-width: 90%; }
-        .prize-icon { font-size: 50px; margin-bottom: 10px; }
-        .prize-title { color: var(--gold); font-size: 22px; margin-bottom: 8px; }
-        .prize-amount { font-size: 26px; font-weight: bold; color: var(--green); margin-bottom: 15px; }
-
-        .whats-new-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 340px; max-height: 85vh; background: linear-gradient(135deg, #1a1f2a, #0f1219); border: 3px solid var(--gold); border-radius: 16px; padding: 14px; z-index: 10000; color: white; text-align: center; overflow-y: auto; }
-        .whats-new-title { font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 6px; }
-        .whats-new-version { font-size: 11px; color: var(--green); margin-bottom: 10px; display: inline-block; padding: 2px 10px; background: rgba(0,255,136,0.1); border-radius: 20px; }
-        .whats-new-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 4px 0; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid var(--gold); text-align: left; }
-        .whats-new-item-icon { font-size: 18px; min-width: 28px; text-align: center; }
-        .whats-new-item-text { font-size: 11px; line-height: 1.3; }
-        .whats-new-item-text b { color: var(--gold); }
-        .whats-new-button { background: linear-gradient(45deg, #ffcc00, #ffaa00); color: black; border: none; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 15px; cursor: pointer; margin-top: 10px; width: 100%; }
-        .whats-new-close { position: absolute; top: 8px; right: 8px; font-size: 18px; color: #888; cursor: pointer; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(0,0,0,0.5); }
-
-        .game-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card); color: var(--text); padding: 10px 20px; border-radius: 10px; font-weight: bold; z-index: 12000; text-align: center; min-width: 200px; max-width: 90%; border: 2px solid var(--gold); box-shadow: 0 4px 20px rgba(0,0,0,0.6); pointer-events: none; font-size: 13px; }
-        .game-notification.success { border-color: var(--green); background: linear-gradient(45deg, #00aa55, #006633); color: #fff; }
-        .game-notification.error { border-color: var(--red); background: linear-gradient(45deg, #aa3333, #661111); color: #fff; }
-
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 999; }
-
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
-        .loading-overlay.hidden { opacity: 0; pointer-events: none !important; }
-        .loading-spinner { width: 50px; height: 50px; border: 5px solid rgba(255,204,0,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        .loading-text { color: var(--gold); font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .player-id { font-size: 9px; color: var(--gold); text-align: center; margin-top: 3px; padding: 2px; background: rgba(255,204,0,0.1); border-radius: 4px; cursor: pointer; }
-        .time-display { font-size: 11px; color: #888; margin-left: auto; margin-right: 85px; }
-        .rank-badge { font-size: 12px; font-weight: bold; color: var(--gold); }
-        .exp-bar { width: 100%; height: 6px; background: #222; border-radius: 4px; margin-top: 6px; overflow: hidden; }
-        .exp-fill { height: 100%; background: var(--gold); width: 0%; transition: 0.5s; }
-
-        .header-buttons { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; z-index: 20; }
-        .header-btn { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid var(--gold); background: var(--accent); color: #fff; }
-        .header-btn:active { transform: scale(0.9); }
-        .header-btn.uran-btn { background: linear-gradient(45deg, #39ff14, #00cc00); color: black; }
-        .header-btn.uran-btn.disabled { background: #2c2c2c; border-color: #666; opacity: 0.5; pointer-events: none; }
-
-        .mission-btn { background: linear-gradient(45deg, #0066ff, #00ccff); color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 4px; width: 100%; font-size: 12px; }
-        .mission-info { font-size: 9px; color: #888; margin-top: 4px; }
-        .bonus-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
-        .ad-card-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: 800; color: #fff; cursor: pointer; font-size: 13px; margin-top: 6px; }
-
-        canvas { width: 100%; height: 90px; background: #050505; border-radius: 10px; margin: 6px 0; }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay" class="loading-overlay">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">ЗАГРУЗКА ИМПЕРИИ...</div>
-</div>
+    <div class="header">
+        <button class="sound-toggle" id="sound-btn" onclick="toggleSound()">🔊</button>
+        <div class="main-bal"><span id="m-val">0</span> ₽</div>
+        <div class="res-grid">
+            <div class="res-card"><small>Нефть</small><span id="o-val">0</span> 🛢️</div>
+            <div class="res-card"><small>Газ</small><span id="g-val">0</span> 🔥</div>
+            <div class="res-card"><small>BTC</small><span id="b-val">0.000</span> ₿</div>
+            <div class="res-card"><small>Вклад</small><span id="s-val">0</span> ₽</div>
+            <div class="res-card"><small>Доллары</small><span id="usd-val">0</span> $</div>
+            <div class="res-card"><small>Уран</small><span id="u-val">0</span> ☢️</div>
+            <div class="res-card"><small>Космо-нефть</small><span id="so-val">0</span> 🌌</div>
+            <div class="res-card"><small>Ракеты</small><span id="r-val">0</span> 🚀</div>
+        </div>
+    </div>
 
-<div id="app">
-    <header>
-        <div class="flex" style="margin-bottom:2px">
-            <span class="rank-badge" id="rank-name">НОВИЧОК</span>
-            <span class="time-display" id="time-display">00:00</span>
+    <!-- Попап для торговли -->
+    <div id="trade-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div class="popup-title" id="popup-title">Продажа нефти</div>
+            <div class="slider-container">
+                <input type="range" min="0" max="100" value="50" class="slider" id="trade-slider">
+                <div class="slider-info">
+                    <span>Количество: <b id="slider-amount">0</b></span>
+                    <span>Сумма: <b id="slider-total">0</b> ₽</span>
+                </div>
+            </div>
+            <div class="popup-buttons">
+                <button class="btn" onclick="closeTradePopup()" style="background: var(--gray); color: white;">ОТМЕНА</button>
+                <button class="btn" onclick="confirmTrade()" id="confirm-trade-btn">ПОДТВЕРДИТЬ</button>
+            </div>
         </div>
-        
-        <div class="header-buttons">
-            <div id="sound-toggle-btn" class="header-btn" onclick="toggleSound()">🔊</div>
-            <div id="uran-switch-btn" class="header-btn uran-btn disabled" onclick="if(!this.classList.contains('disabled')){ switchToUranClicker(); }">☢️</div>
-        </div>
-        
-        <div id="m-display" class="balance-glow">0 ₽</div>
-        
-        <div class="player-id" id="player-id-display" onclick="copyPlayerId()">
-            ID: <span id="player-id">...</span> 📋
-        </div>
-        
-        <div class="top-grid">
-            <div class="mini-card"><div id="t-oil">OIL</div>🛢️ <b id="o-val">0</b></div>
-            <div class="mini-card"><div id="t-gas">GAS</div>⛽ <b id="g-val">0</b></div>
-            <div class="mini-card"><div id="t-crypto">BTC</div>₿ <b id="b-val">0.00</b></div>
-            <div class="mini-card"><div id="t-bank">BANK</div>🏦 <b id="s-val">0</b></div>
-            <div class="mini-card"><div id="t-usd">USD</div>$ <b id="usd-val">0</b></div>
-        </div>
-    </header>
+    </div>
 
-    <main id="main-scroll">
-        <!-- ДОБЫЧА -->
+    <!-- Случайные события -->
+    <div id="event-popup" class="event-popup">
+        <h4 id="event-title" style="margin-bottom: 8px; color: var(--gold-light);">⚡ Событие!</h4>
+        <p id="event-desc" style="font-size: 12px; margin-bottom: 12px;"></p>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn" onclick="acceptEvent()" id="event-accept-btn" style="flex: 1;">ПРИНЯТЬ</button>
+            <button class="btn" onclick="closeEvent()" id="event-decline-btn" style="background: var(--gray); color: white;">ОТКЛОНИТЬ</button>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- ШАХТА -->
         <div id="p-mining" class="page active">
-            <div class="click-zone">
-                <div class="main-rig" id="rig-btn">
-                    🏗️
-                    <div id="cooldown-overlay" class="cooldown-overlay" style="display: none;"></div>
+            <div class="drill-zone">
+                <div class="rig-btn" id="drill-trigger">
+                    <span style="font-size: 45px;">🏗️</span>
+                    <small style="font-size: 9px; font-weight: bold; color: var(--gold);">БУРИТЬ</small>
                 </div>
-                <div id="boost-badge" class="boost-badge" style="display: none;">2x</div>
-            </div>
-            
-            <div class="ui-card" style="text-align: center;">
-                <button class="double-click-btn" onclick="activateDoubleClick()" id="double-click-btn">
-                    🎬 2X КЛИК НА 30 СЕК
+                <button class="boost-btn" id="double-click-btn" onclick="activateDoubleClick()">
+                    ⚡ 2X КЛИК (30 СЕК) - РЕКЛАМА
                 </button>
-                <div id="boost-timer" class="boost-timer"></div>
+                <p style="margin-top: 8px; font-size: 11px; color: var(--gray);">
+                    Клик: +<span id="c-pow">1</span> 🛢️ | Авто: +<span id="a-pow">0</span> 🛢️/сек
+                    <span id="boost-timer" style="color: var(--purple); font-weight: bold; display: none;"> | ⚡ <span id="boost-sec">30</span>с</span>
+                </p>
             </div>
-            
-            <div class="ui-card flex">
-                <div><b id="t-upg">Улучшить бур</b><br><small id="dr-info">Уровень 1</small></div>
-                <button class="btn-main" onclick="buyUpgrade('dr')" id="btn-upg-val">100 ₽</button>
+
+            <div class="card">
+                <div class="item-row">
+                    <div class="item-info">
+                        <h4>Усилить бур (Ур. <span id="d-lvl">1</span>)</h4>
+                        <p>Мощность бурения +2 ед. нефти</p>
+                    </div>
+                    <button class="btn" onclick="upDrill()" id="d-btn">100 ₽</button>
+                </div>
             </div>
-            
-            <div class="items-section">
-                <h3 style="color: var(--gold); margin: 8px 0 6px 0; font-size: 14px;">🎁 ПРЕДМЕТЫ И ОБОРУДОВАНИЕ</h3>
-                <div class="items-grid" id="items-container"></div>
-            </div>
-            <div class="spacer-bottom"></div>
+
+            <h4 style="margin: 15px 0 8px; font-size: 12px; color: var(--gray); text-transform: uppercase;">Оборудование</h4>
+            <div id="shop-mining"></div>
         </div>
 
-        <!-- УРАНОВЫЙ РУДНИК -->
+        <!-- УРАН -->
         <div id="p-uran" class="page">
-            <div class="ui-card" style="border-color: var(--uran);">
-                <div class="flex">
-                    <h2 style="color: var(--uran); margin: 0; font-size: 18px;">☢️ УРАНОВЫЙ РУДНИК</h2>
-                    <button class="btn-main" style="background: var(--gold); padding: 5px 10px; font-size: 11px;" onclick="switchToOilClicker()">🔙 НАЗАД</button>
-                </div>
-                
-                <div class="uran-click-zone">
-                    <div class="uran-rig" id="uran-rig-btn">☢️</div>
-                </div>
-
-                <div class="uran-stats">
-                    <div class="uran-stat-card">
-                        <div style="font-size: 16px;">☢️</div>
-                        <div class="uran-stat-value" id="uran-val">0</div>
-                        <div style="font-size: 8px; color: #888;">УРАН</div>
-                    </div>
-                    <div class="uran-stat-card">
-                        <div style="font-size: 16px;">⚡</div>
-                        <div class="uran-stat-value" id="uran-level-val">1</div>
-                        <div style="font-size: 8px; color: #888;">УРОВЕНЬ</div>
-                    </div>
-                    <div class="uran-stat-card">
-                        <div style="font-size: 16px;">💰</div>
-                        <div class="uran-stat-value" id="uran-price-val">2000</div>
-                        <div style="font-size: 8px; color: #888;">ЦЕНА/ЕД ($)</div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 10px;">
-                    <div class="ui-card flex" style="padding: 8px 10px;">
-                        <div>
-                            <b style="font-size: 12px;">🚀 УЛУЧШЕНИЕ БУРА</b><br>
-                            <small id="uran-dr-info" style="font-size: 10px;">Уровень 1</small>
-                        </div>
-                        <button class="btn-main" onclick="buyUranUpgrade()" id="btn-uran-upg-val" style="font-size: 10px; padding: 5px 10px;">20 000 $</button>
-                    </div>
-
-                    <div class="ui-card flex" style="padding: 8px 10px;">
-                        <div>
-                            <b style="font-size: 12px;">💎 ПРОДАТЬ ВЕСЬ УРАН</b><br>
-                            <small style="font-size: 9px;">Мгновенный обмен на USD</small>
-                        </div>
-                        <button class="btn-main" onclick="sellUranAll()" id="sell-uran-btn" style="font-size: 10px; padding: 5px 10px;">ПРОДАТЬ</button>
-                    </div>
-
-                    <!-- 8-Й БЛОК РЕКЛАМЫ (R-M-20330347-8) -->
-                    <div class="ui-card" style="padding: 8px 10px; border-color: var(--uran); text-align: center;">
-                        <b style="color: var(--uran); font-size: 12px;">☢️ СВЕРХДОБЫЧА УРАНА</b>
-                        <button class="ad-card-btn" style="background: linear-gradient(45deg, #00aa00, #39ff14); color: #000;" onclick="showAdForUranium()">🎬 ПОЛУЧИТЬ +50 УРАНА (РЕКЛАМА)</button>
-                    </div>
-
-                    <div class="items-section">
-                        <h3 style="color: var(--uran); margin: 8px 0 6px 0; font-size: 13px;">☢️ УРАНОВЫЕ УЛУЧШЕНИЯ</h3>
-                        <div class="items-grid" id="uran-items-container"></div>
-                    </div>
-                </div>
+            <div id="uran-locked" style="text-align: center; padding: 40px 20px;">
+                <span style="font-size: 60px;">🔒</span>
+                <h3 style="margin: 15px 0 10px; color: var(--uran);">Урановая шахта заблокирована</h3>
+                <p style="font-size: 12px; color: var(--gray); margin-bottom: 20px;">
+                    Купите "Урановое оборудование" во вкладке Добыча за 100,000 $, чтобы открыть доступ к добыче урана!
+                </p>
             </div>
-            <div class="spacer-bottom"></div>
+
+            <div id="uran-unlocked" style="display: none;">
+                <div class="drill-zone">
+                    <div class="rig-btn uran" id="uran-drill-trigger">
+                        <span style="font-size: 45px;">☢️</span>
+                        <small style="font-size: 9px; font-weight: bold; color: var(--uran);">ДОБЫВАТЬ</small>
+                    </div>
+                    <p style="margin-top: 8px; font-size: 11px; color: var(--gray);">
+                        Клик: +<span id="u-pow">1</span> ☢️ | Цена: 500 $/ед.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="item-row">
+                        <div class="item-info">
+                            <h4>Урановый бур (Ур. <span id="ud-lvl">1</span>)</h4>
+                            <p>Добыча урана +1 за клик</p>
+                        </div>
+                        <button class="btn" onclick="upUranDrill()" id="ud-btn" style="background: var(--uran); color: #000;">1000 $</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="item-row">
+                        <div class="item-info">
+                            <h4>Продать весь уран</h4>
+                            <p>500 $ за единицу урана</p>
+                        </div>
+                        <button class="btn" onclick="sellUran()" style="background: var(--green); color: white;">ПРОДАТЬ</button>
+                    </div>
+                </div>
+
+                <div class="card" style="border: 1px solid var(--uran);">
+                    <div class="item-row">
+                        <div class="item-info">
+                            <h4 style="color: var(--uran);">☢️ Срочная поставка урана</h4>
+                            <p>Получите +50 ☢️ урана за просмотр рекламы</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-ad" onclick="showAdForUranium()">🎬 ПОЛУЧИТЬ +50 ☢️ (РЕКЛАМА)</button>
+                </div>
+
+                <h4 style="margin: 15px 0 8px; font-size: 12px; color: var(--gray); text-transform: uppercase;">Урановые технологии</h4>
+                <div id="shop-uran"></div>
+            </div>
         </div>
 
-        <!-- ПРОФИЛЬ -->
+        <!-- ПРОФИЛЬ (РАНГИ И КВЕСТЫ) -->
         <div id="p-profile" class="page">
-            <div class="ui-card" style="text-align: center;">
-                <div style="font-size: 46px;">👤</div>
-                <h2 id="prof-rank" style="color: var(--gold); font-size: 20px; margin: 4px 0;">НОВИЧОК</h2>
-                <div class="exp-bar"><div class="exp-fill" id="exp-f"></div></div>
-                <p style="font-size: 12px; margin: 6px 0 0 0;"><span id="t-next">До след. ранга:</span> <span id="exp-t">0</span> ₽</p>
-            </div>
-            
-            <div class="ui-card">
-                <h3 style="color: var(--gold); margin: 0 0 6px 0; font-size: 14px;">🎫 ПРОМОКОДЫ</h3>
-                <input type="text" class="promo-input" id="promo-code" placeholder="Введите промокод" maxlength="20">
-                <button class="promo-btn" onclick="activatePromoCode()">АКТИВИРОВАТЬ</button>
-                <div style="margin-top: 8px; font-size: 9px; color: #888; text-align: center;">
-                    Доступные коды:<br>
-                    <span style="color: var(--gold);">OILMAGNAT2024</span> • 
-                    <span style="color: var(--gold);">BLACKGOLD100</span> • 
-                    <span style="color: var(--gold);">SPACEOIL50</span>
+            <!-- Ввод никнейма -->
+            <div class="card">
+                <h4 style="margin-bottom: 8px;">👤 Ваш никнейм</h4>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="player-nickname" placeholder="Введите никнейм..." maxlength="15"
+                        style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--gray); background: #090d16; color: var(--text); font-size: 13px;">
+                    <button class="btn" onclick="saveNickname()" style="background: var(--green); color: white;">✓</button>
                 </div>
             </div>
 
-            <h3 id="t-q" style="font-size: 14px; color: var(--gold);">🎯 Задания</h3>
-            <div id="quest-container"></div>
-            
-            <div class="leaderboard-section">
-                <div class="leaderboard-header">
-                    <h3>🏆 ТОП МАГНАТОВ МИРА</h3>
-                    <div class="leaderboard-refresh" onclick="refreshLeaderboard()">🔄</div>
+            <!-- Секретные промокоды -->
+            <div class="card">
+                <h4 style="margin-bottom: 8px;">🎁 Секретный промокод</h4>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="promo-input" placeholder="Введите промокод..." maxlength="20"
+                        style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--gray); background: #090d16; color: var(--text); font-size: 13px; text-transform: uppercase;">
+                    <button class="btn" onclick="activatePromoCode()" style="background: var(--purple); color: white;">АКТИВИРОВАТЬ</button>
                 </div>
-                <div id="leaderboard-list" class="leaderboard-list"></div>
+                <p style="font-size: 10px; color: var(--gray); margin-top: 6px;">💡 Подсказка: следите за обновлениями игры!</p>
             </div>
-            <div class="spacer-bottom"></div>
+
+            <div class="card" style="text-align: center;">
+                <h3 style="margin-bottom: 5px;">Ваш ранг</h3>
+                <div class="rank-badge" id="current-rank">Новичок</div>
+                <p style="font-size: 11px; color: var(--gray); margin-top: 8px;">
+                    Бонус к доходу: +<span id="rank-bonus">0</span>%
+                </p>
+                <div class="quest-progress" style="margin-top: 10px;">
+                    <div class="quest-progress-bar" id="rank-progress" style="width: 0%;"></div>
+                </div>
+                <small style="font-size: 10px; color: var(--gray); margin-top: 5px; display: block;">
+                    До следующего ранга: <span id="rank-next">10,000</span> ₽
+                </small>
+            </div>
+
+            <h4 style="margin: 15px 0 8px; font-size: 12px; color: var(--gray); text-transform: uppercase;">📋 Активные квесты</h4>
+            <div id="quests-list"></div>
+
+            <!-- Таблица лидеров -->
+            <h4 style="margin: 15px 0 8px; font-size: 12px; color: var(--gray); text-transform: uppercase;">🏆 Топ-10 игроков</h4>
+            <div id="leaderboard-list"></div>
         </div>
 
-        <!-- БИЗНЕС -->
+        <!-- ЗАВОДЫ -->
         <div id="p-biz" class="page">
-            <h3 style="color: var(--gold); margin: 4px 0 8px 0; font-size: 15px;">🏭 ВАША КОРПОРАЦИЯ</h3>
-            <div id="biz-container"></div>
-            <div id="space-container"></div>
-            <div class="spacer-bottom"></div>
+            <h4 style="margin-bottom: 10px; font-size: 12px; color: var(--gray); text-transform: uppercase;">Промышленность и переработка</h4>
+            <div id="shop-biz"></div>
+
+            <h4 style="margin: 20px 0 10px; font-size: 12px; color: var(--space); text-transform: uppercase;">🚀 Космическая программа</h4>
+            <div id="shop-space"></div>
         </div>
 
-        <!-- БИРЖА (Восстановлена) -->
+        <!-- БИРЖА -->
         <div id="p-market" class="page">
-            <div class="ui-card">
-                <div class="flex">
-                    <b id="t-brent" style="color: var(--gold);">НЕФТЬ BRENT</b>
-                    <b id="o-price" style="color: var(--green);">15 ₽</b>
+            <!-- Нефть -->
+            <div class="card">
+                <div class="item-row">
+                    <h4>Нефть Brent</h4>
+                    <span id="oil-p-txt" style="color: var(--green); font-weight: bold;">50 ₽</span>
                 </div>
-                <canvas id="o-chart" width="300" height="90"></canvas>
-                <button class="btn-main" style="width: 100%;" id="t-sell-oil" onclick="openOilSlider('sell')">ПРОДАТЬ НЕФТЬ</button>
+                <div class="chart-box"><canvas id="oilChart"></canvas></div>
+                <button class="btn" style="width: 100%; background: var(--green); color: white;" onclick="openOilSellPopup()">ПРОДАТЬ НЕФТЬ</button>
             </div>
 
-            <div class="ui-card">
-                <div class="flex">
-                    <b style="color: var(--gold);">BITCOIN (BTC)</b>
-                    <b id="b-price" style="color: var(--green);">40 000 ₽</b>
+            <!-- Биткоин -->
+            <div class="card">
+                <div class="item-row">
+                    <h4>Bitcoin / RUB</h4>
+                    <span id="btc-p-txt" style="color: var(--gold-light); font-weight: bold;">2.5M ₽</span>
                 </div>
-                <canvas id="b-chart" width="300" height="90"></canvas>
-                <div class="flex" style="gap: 8px;">
-                    <button class="btn-main" style="flex: 1; background: var(--green);" id="t-buy" onclick="openBtcSlider('buy')">КУПИТЬ BTC</button>
-                    <button class="btn-main" style="flex: 1; background: var(--red); color: #fff;" id="t-sell" onclick="openBtcSlider('sell')">ПРОДАТЬ BTC</button>
+                <div class="chart-box"><canvas id="btcChart"></canvas></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button class="btn" onclick="openBtcBuyPopup()">КУПИТЬ BTC</button>
+                    <button class="btn" style="background: var(--blue); color: white;" onclick="openBtcSellPopup()">ПРОДАТЬ BTC</button>
                 </div>
             </div>
-            <div class="spacer-bottom"></div>
         </div>
 
-        <!-- БАНК (Восстановлен) -->
+        <!-- БАНК -->
         <div id="p-bank" class="page">
-            <div class="ui-card" style="text-align: center;">
-                <div style="font-size: 38px;">🏦</div>
-                <h3 id="t-central-bank" style="color: var(--gold); margin: 4px 0;">Центральный Банк</h3>
-                <p style="font-size: 11px; color: #888; margin: 2px 0;">Вклад растет на +1% каждые 30 секунд</p>
-                <div id="bank-val" style="font-size: 24px; font-weight: 900; color: var(--green); margin: 10px 0;">0 ₽</div>
-                <div class="flex" style="gap: 8px;">
-                    <button class="btn-main" style="flex: 1;" id="t-dep" onclick="bankAction('in')">ВНЕСТИ 25%</button>
-                    <button class="btn-main" style="flex: 1; background: #444; color: #fff;" id="t-wd" onclick="bankAction('out')">СНЯТЬ ВСЁ</button>
+            <div class="card" style="text-align: center;">
+                <p style="font-size: 11px; color: var(--gray);">Ваш вклад (растет на +1% каждые 30 сек)</p>
+                <h2 id="bank-v" style="color: var(--gold-light); margin: 8px 0;">0 ₽</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn" onclick="bDep()">ВЛОЖИТЬ 25%</button>
+                    <button class="btn" style="background: #334155; color: #fff;" onclick="bWith()">СНЯТЬ ВСЁ</button>
                 </div>
             </div>
 
-            <div class="ui-card" style="text-align: center;">
-                <div style="font-size: 34px;">💵</div>
-                <h3 style="color: #00ccff; margin: 4px 0;">Валютный Обменник (USD)</h3>
-                <p style="font-size: 11px; color: #888; margin: 2px 0;">Курс доллара: <b id="usd-rate" style="color: var(--gold);">75 ₽</b></p>
-                <div id="usd-balance" style="font-size: 22px; font-weight: 900; color: #00ccff; margin: 8px 0;">$0</div>
-                <div class="flex" style="gap: 8px;">
-                    <button class="btn-main" style="flex: 1; background: #00ccff; color: #000;" onclick="exchangeCurrency('buy')">КУПИТЬ $ (25% вклада)</button>
-                    <button class="btn-main" style="flex: 1; background: var(--green); color: #000;" onclick="exchangeCurrency('sell')">ПРОДАТЬ ВСЕ $</button>
+            <div class="card">
+                <h4 style="margin-bottom: 8px;">💵 Валютный обменник</h4>
+                <p style="font-size: 11px; color: var(--gray); margin-bottom: 10px;">
+                    Курс: 1 $ = <span id="usd-rate">90</span> ₽
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn" onclick="openUsdBuyPopup()" style="background: var(--green); color: white;">КУПИТЬ $</button>
+                    <button class="btn" onclick="openUsdSellPopup()" style="background: var(--blue); color: white;">ПРОДАТЬ $</button>
                 </div>
             </div>
-            <div class="spacer-bottom"></div>
         </div>
 
-        <!-- БОНУСЫ (Восстановлены - Блоки РСЯ 2, 3, 4, 5) -->
+        <!-- БОНУСЫ ЗА РЕКЛАМУ -->
         <div id="p-bonus" class="page">
-            <div class="bonus-grid">
-                <div class="ui-card" style="text-align: center; border-color: var(--gold);">
-                    <div style="font-size: 32px;">💰</div>
-                    <h3 id="t-bonus-title" style="color: var(--gold); margin: 4px 0;">Премиум Бонус</h3>
-                    <p id="t-bonus-desc" style="font-size: 11px; color: #aaa; margin: 4px 0;">Посмотри короткую рекламу и получи +15 000 ₽!</p>
-                    <button class="ad-card-btn" style="background: linear-gradient(45deg, #ffcc00, #ff8800); color: #000;" id="t-watch" onclick="showRewardedAd()">🎬 ПОЛУЧИТЬ +15 000 ₽</button>
-                </div>
+            <h4 style="margin-bottom: 10px; font-size: 12px; color: var(--purple); text-transform: uppercase;">🎬 Бонусы за просмотр рекламы</h4>
 
-                <div class="ui-card" style="text-align: center; border-color: #00ccff;">
-                    <div style="font-size: 32px;">💵</div>
-                    <h3 style="color: #00ccff; margin: 4px 0;">Валютный Грант</h3>
-                    <p style="font-size: 11px; color: #aaa; margin: 4px 0;">Инвесторы из США готовы перевести +$50!</p>
-                    <button class="ad-card-btn" style="background: linear-gradient(45deg, #0088ff, #00ccff);" onclick="showAdForUSD()">🎬 ПОЛУЧИТЬ +$50</button>
+            <div class="card" style="border: 1px solid var(--purple); background: rgba(168, 85, 247, 0.05);">
+                <div class="item-row">
+                    <div class="item-info">
+                        <h4 style="color: var(--purple);">💰 Премиум Бонус</h4>
+                        <p>Получите +15,000 ₽ за просмотр рекламы</p>
+                    </div>
                 </div>
-
-                <div class="ui-card" style="text-align: center; border-color: #ff6600;">
-                    <div style="font-size: 32px;">🛢️</div>
-                    <h3 style="color: #ff6600; margin: 4px 0;">Поставка Нефти</h3>
-                    <p style="font-size: 11px; color: #aaa; margin: 4px 0;">Мгновенная разгрузка танкера: +1 000 баррелей нефти!</p>
-                    <button class="ad-card-btn" style="background: linear-gradient(45deg, #ff3300, #ff8800);" onclick="showAdForOil()">🎬 ПОЛУЧИТЬ +1 000 НЕФТИ</button>
-                </div>
-
-                <div class="ui-card" style="text-align: center; border-color: var(--green);">
-                    <div style="font-size: 32px;">₿</div>
-                    <h3 style="color: var(--green); margin: 4px 0;">Крипто-Аирдроп (1 BTC)</h3>
-                    <p style="font-size: 11px; color: #aaa; margin: 4px 0;">Получи целый Биткоин бесплатно раз в 3 минуты!</p>
-                    <button class="ad-card-btn" id="btc-ad-btn" style="background: linear-gradient(45deg, #00aa55, #00ff88); color: #000;" onclick="showAdForBTC()">🎬 ПОЛУЧИТЬ +1 BTC</button>
-                    <div id="btc-ad-timer" style="font-size: 11px; color: var(--gold); margin-top: 4px;"></div>
-                </div>
+                <button class="btn btn-ad" onclick="showRewardedAd()">🎬 ПОЛУЧИТЬ 15,000 ₽</button>
             </div>
-            <div class="spacer-bottom"></div>
+
+            <div class="card" style="border: 1px solid var(--green); background: rgba(16, 185, 129, 0.05);">
+                <div class="item-row">
+                    <div class="item-info">
+                        <h4 style="color: var(--green);">💵 Валютный грант</h4>
+                        <p>Получите +50 $ за просмотр рекламы</p>
+                    </div>
+                </div>
+                <button class="btn btn-ad" onclick="showAdForUSD()" style="background: linear-gradient(135deg, var(--green), var(--emerald));">🎬 ПОЛУЧИТЬ 50 $</button>
+            </div>
+
+            <div class="card" style="border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.05);">
+                <div class="item-row">
+                    <div class="item-info">
+                        <h4 style="color: var(--gold);">🛢️ Нефтяная поставка</h4>
+                        <p>Получите +1,000 нефти за просмотр рекламы</p>
+                    </div>
+                </div>
+                <button class="btn btn-ad" onclick="showAdForOil()" style="background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000;">🎬 ПОЛУЧИТЬ 1,000 🛢️</button>
+            </div>
+
+            <div class="card" style="border: 1px solid var(--cyan); background: rgba(6, 182, 212, 0.05);">
+                <div class="item-row">
+                    <div class="item-info">
+                        <h4 style="color: var(--cyan);">₿ Крипто-эйрдроп</h4>
+                        <p id="btc-ad-desc">Получите +1 BTC за просмотр рекламы (раз в 3 мин)</p>
+                    </div>
+                </div>
+                <button class="btn btn-ad" id="btc-ad-btn" onclick="showAdForBTC()" style="background: linear-gradient(135deg, var(--cyan), var(--blue));">🎬 ПОЛУЧИТЬ 1 BTC</button>
+            </div>
         </div>
 
-        <!-- ЛЮКС (Восстановлен) -->
+        <!-- РОСКОШЬ -->
         <div id="p-lux" class="page">
-            <h3 style="color: var(--gold); margin: 4px 0 8px 0; font-size: 15px;">💎 ИМУЩЕСТВО МИЛЛИАРДЕРА</h3>
-            <div id="lux-container"></div>
-            <div class="spacer-bottom"></div>
+            <h4 style="margin-bottom: 10px; font-size: 12px; color: var(--gold); text-transform: uppercase;">Имущество миллиардера (Статус)</h4>
+            <div id="shop-lux"></div>
         </div>
 
         <!-- КОЛЕСО ФОРТУНЫ -->
         <div id="p-fortune" class="page">
-            <div class="ui-card" style="text-align: center;">
-                <h2 style="color: var(--gold); margin-bottom: 10px; font-size: 18px;">🎡 КОЛЕСО ФОРТУНЫ</h2>
-                
+            <h3 style="text-align: center; margin-bottom: 10px; color: var(--gold-light);">🎰 Колесо Фортуны</h3>
+            <p style="text-align: center; font-size: 12px; color: var(--gray); margin-bottom: 15px;">
+                Испытайте удачу и выиграйте ценные призы!
+            </p>
+
+            <div class="wheel-container">
                 <div class="wheel-wrapper">
-                    <div class="wheel" id="wheel"></div>
-                    <div class="wheel-center" id="spin-btn">SPIN</div>
                     <div class="wheel-pointer"></div>
-                </div>
-                
-                <div class="wheel-stats">
-                    <div>Бесплатный спин: <span id="free-spin-timer">24:00:00</span></div>
-                    <div>Реклам: <span id="ads-watched">0/10</span></div>
-                </div>
-                
-                <button class="wheel-btn" onclick="spinWheel('free')" id="free-spin-btn">🎁 БЕСПЛАТНЫЙ СПИН</button>
-                <button class="wheel-btn" onclick="spinWheel('ad')" id="ad-spin-btn" style="margin-top: 6px;">📺 СПИН ЗА РЕКЛАМУ</button>
-                
-                <div class="wheel-timer" id="wheel-timer" style="font-size: 10px; color: #888; margin-top: 6px;">
-                    Следующий бесплатный спин через: 24:00:00
+                    <div class="wheel" id="fortune-wheel">
+                        <div class="wheel-section" style="--sector-angle: 30deg;"><span>50$</span></div>
+                        <div class="wheel-section" style="--sector-angle: 90deg;"><span>1000₽</span></div>
+                        <div class="wheel-section" style="--sector-angle: 150deg;"><span>50🛢️</span></div>
+                        <div class="wheel-section" style="--sector-angle: 210deg;"><span>0.01₿</span></div>
+                        <div class="wheel-section" style="--sector-angle: 270deg;"><span>5000₽</span></div>
+                        <div class="wheel-section" style="--sector-angle: 330deg;"><span>100$</span></div>
+                    </div>
+                    <div class="wheel-center">🎰</div>
                 </div>
             </div>
-            
-            <div class="ui-card" style="margin-top: 10px; text-align: center;">
-                <h3 style="color: #9d00ff; margin-bottom: 10px; font-size: 16px;">👑 VIP КОЛЕСО (X5)</h3>
-                <div class="wheel-wrapper">
-                    <div class="wheel" id="vip-wheel" style="border: 6px solid #9d00ff;"></div>
-                    <div class="wheel-center" style="background: #9d00ff; color: #fff;">VIP</div>
-                    <div class="wheel-pointer" style="background: #ff00ff;"></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                <button class="btn" onclick="spinWheel('paid')" id="spin-paid-btn" style="padding: 14px; font-size: 13px;">
+                    💰 КРУТИТЬ (100 $)
+                </button>
+                <button class="btn btn-ad" onclick="spinWheel('ad')" id="spin-ad-btn" style="margin: 0; padding: 14px; font-size: 13px;">
+                    🎬 ЗА РЕКЛАМУ
+                </button>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 8px; color: var(--gold-light);">🎁 Возможные призы:</h4>
+                <div style="font-size: 11px; color: var(--gray); line-height: 1.6;">
+                    • 50 $ - Доллары США<br>
+                    • 100 $ - Доллары США<br>
+                    • 1,000 ₽ - Рубли<br>
+                    • 5,000 ₽ - Рубли<br>
+                    • 50 🛢️ - Баррели нефти<br>
+                    • 0.01 ₿ - Биткоин
                 </div>
-                <div style="font-size: 10px; color: #aaa; margin: 6px 0;">Доступно после 10 просмотренных реклам</div>
-                <button class="vip-wheel-btn" onclick="spinVipWheel()" id="vip-spin-btn" disabled>👑 КРУТИТЬ VIP КОЛЕСО</button>
             </div>
-            
-            <div class="ui-card" style="margin-top: 10px;">
-                <h3 style="color: var(--gold); margin-bottom: 6px; font-size: 14px;">🏆 ПРИЗЫ КОЛЕСА</h3>
-                <div style="font-size: 10px; color: #888; margin-bottom: 6px;">Обычное колесо:</div>
-                <div id="wheel-prizes" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;"></div>
-                <div style="font-size: 10px; color: #9d00ff; margin: 10px 0 6px 0;">VIP колесо (в 5 раз больше):</div>
-                <div id="vip-wheel-prizes" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;"></div>
-            </div>
-            <div class="spacer-bottom"></div>
-        </div>
-    </main>
 
-    <nav>
-        <div class="n-item active" onclick="nav('mining', this)"><i>🏗️</i><span id="n-mine">ДОБЫЧА</span></div>
-        <div class="n-item" onclick="nav('profile', this)"><i>👤</i><span id="n-prof">ПРОФИЛЬ</span></div>
-        <div class="n-item" onclick="nav('biz', this)"><i>🏭</i><span id="n-biz">БИЗНЕС</span></div>
-        <div class="n-item" onclick="nav('market', this)"><i>📈</i><span id="n-mkt">БИРЖА</span></div>
-        <div class="n-item" onclick="nav('bank', this)"><i>🏦</i><span id="n-bank">БАНК</span></div>
-        <div class="n-item" onclick="nav('bonus', this)"><i>🎁</i><span id="n-gift">БОНУС</span></div>
-        <div class="n-item" onclick="nav('lux', this)"><i>💎</i><span id="n-lux">ЛЮКС</span></div>
-        <div class="n-item" onclick="nav('fortune', this)"><i>🎡</i><span id="n-fortune">КОЛЕСО</span></div>
-    </nav>
-</div>
+            <!-- КОЛЕСО ФОРТУНЫ X5 -->
+            <div style="border-top: 2px solid var(--gold); margin: 30px 0 20px; padding-top: 20px;">
+                <h3 style="text-align: center; margin-bottom: 5px; color: var(--purple);">🔥 Колесо Фортуны X5 VIP</h3>
+                <p style="text-align: center; font-size: 11px; color: var(--gray); margin-bottom: 10px;">
+                    Призы увеличены в 5 раз! Требуется просмотр 10 реклам в обычном колесе.
+                </p>
+                <div id="x5-progress-info" style="text-align: center; margin-bottom: 15px;">
+                    <span style="font-size: 12px; color: var(--gold-light); font-weight: bold;">
+                        Просмотрено реклам: <span id="ads-watched-count">0</span> / 10
+                    </span>
+                </div>
 
-<div id="prize-popup" class="prize-popup" style="display: none;">
-    <div class="prize-icon" id="prize-icon">🎁</div>
-    <div class="prize-title" id="prize-title">ВЫ ВЫИГРАЛИ!</div>
-    <div class="prize-amount" id="prize-amount">0</div>
-    <button class="btn-main" onclick="closePrizePopup()" style="width: 100%;">ЗАБРАТЬ</button>
-</div>
-
-<div id="whats-new-popup" class="whats-new-popup" style="display: none;">
-    <div class="whats-new-close" onclick="closeWhatsNew()">✖</div>
-    <div class="whats-new-title">🆕 ОБНОВЛЕНИЕ</div>
-    <div class="whats-new-version">Версия 2.1.0 (RuStore Edition)</div>
-    
-    <div class="whats-new-list">
-        <div class="whats-new-item">
-            <div class="whats-new-item-icon">🎬</div>
-            <div class="whats-new-item-text"><b>VIP Бонусы РСЯ</b> — мгновенная загрузка наград и +50 Урана!</div>
-        </div>
-        <div class="whats-new-item">
-            <div class="whats-new-item-icon">🏆</div>
-            <div class="whats-new-item-text"><b>Мировой Лидерборд</b> — соревнуйся с нефтяными магнатами!</div>
-        </div>
-        <div class="whats-new-item">
-            <div class="whats-new-item-icon">💤</div>
-            <div class="whats-new-item-text"><b>Оффлайн-доход</b> — заводы приносят прибыль даже когда вы спите!</div>
-        </div>
-        <div class="whats-new-item">
-            <div class="whats-new-item-icon">☢️</div>
-            <div class="whats-new-item-text"><b>Авто-добыча урана</b> — экстракторы качают уран каждую секунду!</div>
-        </div>
-    </div>
-    
-    <button class="whats-new-button" onclick="closeWhatsNew()">В ИГРУ! 🚀</button>
-</div>
-
-<div id="slider-popup" class="slider-popup" style="display: none;">
-    <div class="resource-icon" id="slider-icon" style="font-size: 30px;">🛢️</div>
-    <div class="slider-title" id="slider-title" style="font-size: 16px; color: var(--gold); margin-bottom: 10px;">Продажа нефти</div>
-    <div class="slider-value" id="slider-amount" style="font-size: 22px; color: var(--green); margin: 8px 0;">0</div>
-    <div class="slider-container" style="margin: 10px 0;">
-        <input type="range" id="slider" class="slider" min="0" max="100" value="0" step="1">
-    </div>
-    <div class="slider-stats" style="display: flex; justify-content: space-between; font-size: 12px; color: #888;">
-        <span id="slider-min">0</span>
-        <span id="slider-max">100</span>
-    </div>
-    <div id="slider-total" style="margin-top: 6px; color: var(--gold); font-size: 14px;">Итого: 0 ₽</div>
-    <div class="slider-buttons">
-        <button class="slider-btn confirm" onclick="confirmSlider()">ПОДТВЕРДИТЬ</button>
-        <button class="slider-btn cancel" onclick="closeSlider()">ОТМЕНА</button>
-    </div>
-</div>
-
-<div id="overlay" class="overlay" style="display: none;"></div>
-
-<script>
-// ============= ЗАЩИТА ОТ ЖЕСТОВ =============
-(function() {
-    document.addEventListener('touchmove', function(e) {
-        if (!e.target.closest('#main-scroll') && !e.target.closest('.whats-new-popup') && !e.target.closest('.slider-popup')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-})();
-
-// ============= ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =============
-var isPaused = false;
-var soundEnabled = true;
-var currentClicker = 'oil';
-var activeEvent = null;
-const GAME_VERSION = "2.1.0";
-
-var lastBtcAdTime = 0;
-const BTC_AD_COOLDOWN = 3 * 60 * 1000;
-var saveTimeout = null;
-const SAVE_DELAY = 500;
-
-var playerId = "";
-var playersData = {};
-
-var currentSliderType = null;
-var currentSliderAction = null;
-var currentSliderMax = 0;
-var currentSliderPrice = 0;
-
-// ============= МОСТ ДЛЯ ANDROID YANDEX SDK (Блоки 1 - 13) =============
-var pendingAdCallback = null;
-
-function requestRewardedAd(blockIndex, onRewardCallback) {
-    if (window.Android && window.Android.showRewarded) {
-        isPaused = true;
-        pendingAdCallback = onRewardCallback;
-        showGameNotification('📺 Загрузка рекламы...', 'success');
-        window.Android.showRewarded(blockIndex);
-    } else {
-        showGameNotification('⏳ Реклама доступна в мобильном приложении', 'error');
-    }
-}
-
-// Вызывается из Java кода MainActivity при успешном просмотре рекламы
-window.onAndroidAdRewarded = function(blockIndex) {
-    isPaused = false;
-    if (typeof pendingAdCallback === 'function') {
-        pendingAdCallback();
-        pendingAdCallback = null;
-    }
-};
-
-window.onAndroidAdClosed = function() {
-    isPaused = false;
-    updateBoostDisplay();
-    const btn = document.getElementById('ad-spin-btn');
-    if (btn) { btn.disabled = false; btn.textContent = '📺 СПИН ЗА РЕКЛАМУ'; }
-};
-
-window.onAndroidAdFailed = function(msg) {
-    isPaused = false;
-    pendingAdCallback = null;
-    showGameNotification('⏳ Реклама еще подгружается, попробуйте через 5 сек', 'error');
-    window.onAndroidAdClosed();
-};
-
-// ============= СОСТОЯНИЕ =============
-var state = { 
-    m: 0, o: 0, g: 0, btc: 0, s: 0, dr: 1, total_earned: 0, 
-    biz: {ref:0, gas:0, plt:0, tnk:0, space:0}, 
-    lux: [], q_done: [], lang: 'ru',
-    last_click_time: 0, click_count: 0,
-    boost_active: false, boost_end: 0,
-    items: { gold_drill: 0, oil_tank: 0, crypto_rig: 0, stock_tips: 0, uranium_equipment: 0 },
-    usd: 0, space_oil: 0, last_mission_time: 0, rockets: 0,
-    used_promos: [],
-    last_free_spin: 0, ads_watched: 0, vip_spins_used: 0,
-    uranium: 0, uranium_drill: 1,
-    uranium_items: { auto_extractor: 0, enrichment_plant: 0, radiation_shield: 0 },
-    game_version_seen: "0.0.0",
-    last_save_time: Date.now()
-};
-
-// ИИ-соперники для живого Лидерборда
-const defaultBots = {
-    "SHEIKH_AL_MANSUR": { m: 95000000, o: 420000, usd: 150000 },
-    "TEXAS_OIL_KING": { m: 42000000, o: 185000, usd: 45000 },
-    "GAZ_PROM_BOSS": { m: 18500000, o: 95000, usd: 12000 },
-    "SIBERIA_MAGNAT": { m: 7400000, o: 54000, usd: 3500 },
-    "ARABIAN_PRINCE": { m: 2900000, o: 28000, usd: 1200 },
-    "LUKOIL_DIRECTOR": { m: 850000, o: 14000, usd: 450 },
-    "BARREL_HUNTER": { m: 240000, o: 6500, usd: 120 },
-    "DRILL_MASTER_99": { m: 65000, o: 2100, usd: 25 },
-    "ROOKIE_MINER": { m: 12000, o: 450, usd: 5 }
-};
-
-// ============= СОХРАНЕНИЕ =============
-function loadGame() {
-    try {
-        const savedPlayers = localStorage.getItem('oil_magnat_players');
-        playersData = savedPlayers ? JSON.parse(savedPlayers) : {};
-        for (let bot in defaultBots) {
-            if (!playersData[bot]) playersData[bot] = defaultBots[bot];
-        }
-        
-        const savedId = localStorage.getItem('oil_magnat_player_id');
-        playerId = savedId || 'MAGNAT_' + Math.random().toString(36).substr(2, 6).toUpperCase();
-        localStorage.setItem('oil_magnat_player_id', playerId);
-        
-        const saved = localStorage.getItem('oil_magnat_save');
-        if (saved) {
-            const data = JSON.parse(saved);
-            for (let key in data) {
-                if (typeof data[key] === 'object' && data[key] !== null && !Array.isArray(data[key])) {
-                    if (!state[key]) state[key] = {};
-                    for (let subkey in data[key]) {
-                        state[key][subkey] = data[key][subkey];
-                    }
-                } else {
-                    state[key] = data[key];
-                }
-            }
-            // Расчет оффлайн дохода
-            const now = Date.now();
-            const diffSec = Math.min(43200, Math.floor((now - (state.last_save_time || now)) / 1000));
-            if (diffSec > 60) {
-                const offlineOil = diffSec * ((state.biz.plt || 0) * 5 + (state.biz.tnk || 0) * 30);
-                if (offlineOil > 0) {
-                    state.o += offlineOil;
-                    setTimeout(() => {
-                        showGameNotification(`💤 Оффлайн добыча: +${offlineOil.toLocaleString()} нефти!`, 'success');
-                    }, 1500);
-                }
-            }
-        }
-        
-        playersData[playerId] = { m: Math.floor(state.m), o: Math.floor(state.o), usd: Math.floor(state.usd) };
-        localStorage.setItem('oil_magnat_players', JSON.stringify(playersData));
-        updatePlayerIdDisplay();
-    } catch (e) { console.error('Ошибка загрузки:', e); }
-}
-
-function saveGame() {
-    try {
-        state.last_save_time = Date.now();
-        localStorage.setItem('oil_magnat_save', JSON.stringify(state));
-        playersData[playerId] = { m: Math.floor(state.m), o: Math.floor(state.o), usd: Math.floor(state.usd) };
-        localStorage.setItem('oil_magnat_players', JSON.stringify(playersData));
-        return true;
-    } catch (e) { return false; }
-}
-
-function saveWithDelay() {
-    if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => { saveGame(); saveTimeout = null; }, SAVE_DELAY);
-}
-
-function updatePlayerIdDisplay() {
-    const display = document.getElementById('player-id');
-    if (display) display.innerText = playerId;
-}
-
-function copyPlayerId() {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(playerId).then(() => {
-            showGameNotification('✅ ID скопирован', 'success');
-        });
-    }
-}
-
-// ============= ЛИДЕРБОРД =============
-function refreshLeaderboard() {
-    const list = document.getElementById('leaderboard-list');
-    if (!list) return;
-    
-    // Небольшой рост ботов для живости
-    for (let id in playersData) {
-        if (id !== playerId && Math.random() < 0.35) {
-            playersData[id].m += Math.floor(Math.random() * 1500);
-            playersData[id].o += Math.floor(Math.random() * 50);
-        }
-    }
-    playersData[playerId] = { m: Math.floor(state.m), o: Math.floor(state.o), usd: Math.floor(state.usd) };
-
-    const players = Object.entries(playersData)
-        .map(([id, data]) => ({ id, money: Math.floor(data?.m || 0), oil: Math.floor(data?.o || 0), usd: Math.floor(data?.usd || 0) }))
-        .sort((a, b) => b.money - a.money)
-        .slice(0, 10);
-    
-    let html = '';
-    players.forEach((p, i) => {
-        const rank = i + 1;
-        const rClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
-        const isCurrent = p.id === playerId;
-        html += `
-            <div class="leaderboard-item ${rClass}" style="${isCurrent ? 'border-color: var(--green);' : ''}">
-                <div class="leaderboard-rank ${rClass}">${rank}</div>
-                <div class="leaderboard-info">
-                    <div class="leaderboard-name">${isCurrent ? '👑 ВЫ (' + p.id + ')' : p.id}</div>
-                    <div class="leaderboard-stats">
-                        <span class="leaderboard-money">💰 ${p.money.toLocaleString()} ₽</span>
-                        <span class="leaderboard-oil">🛢️ ${p.oil.toLocaleString()}</span>
-                        <span class="leaderboard-usd">💵 $${p.usd.toLocaleString()}</span>
+                <div class="wheel-container">
+                    <div class="wheel-wrapper">
+                        <div class="wheel-pointer"></div>
+                        <div class="wheel" id="fortune-wheel-x5" style="border-color: var(--purple); box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);">
+                            <div class="wheel-section" style="--sector-angle: 30deg;"><span>250$</span></div>
+                            <div class="wheel-section" style="--sector-angle: 90deg;"><span>5000₽</span></div>
+                            <div class="wheel-section" style="--sector-angle: 150deg;"><span>250🛢️</span></div>
+                            <div class="wheel-section" style="--sector-angle: 210deg;"><span>0.05₿</span></div>
+                            <div class="wheel-section" style="--sector-angle: 270deg;"><span>25000₽</span></div>
+                            <div class="wheel-section" style="--sector-angle: 330deg;"><span>500$</span></div>
+                        </div>
+                        <div class="wheel-center" style="background: var(--purple);">🔥</div>
                     </div>
                 </div>
-                <div class="leaderboard-copy" onclick="copyOtherPlayerId('${p.id}')">📋</div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                    <button class="btn" onclick="spinWheelX5('paid')" id="spin-x5-paid-btn" style="padding: 14px; font-size: 13px; background: var(--purple); color: white;" disabled>
+                        🔒 500 $ (0/10)
+                    </button>
+                    <button class="btn" onclick="spinWheelX5('free')" id="spin-x5-free-btn" style="padding: 14px; font-size: 13px; background: var(--green); color: white;" disabled>
+                        🔒 БЕСПЛАТНО (0/10)
+                    </button>
+                </div>
+
+                <div class="card" style="margin-top: 15px; border: 1px solid var(--purple);">
+                    <h4 style="margin-bottom: 8px; color: var(--purple);">💎 Призы X5:</h4>
+                    <div style="font-size: 11px; color: var(--gray); line-height: 1.6;">
+                        • 250 $ - Доллары США<br>
+                        • 500 $ - Доллары США<br>
+                        • 5,000 ₽ - Рубли<br>
+                        • 25,000 ₽ - Рубли<br>
+                        • 250 🛢️ - Баррели нефти<br>
+                        • 0.05 ₿ - Биткоин
+                    </div>
+                </div>
             </div>
-        `;
-    });
-    list.innerHTML = html;
-}
+        </div>
+    </div>
 
-function copyOtherPlayerId(id) {
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(id).then(() => {
-            showGameNotification(`✅ ID ${id} скопирован`, 'success');
-        });
-    }
-}
+    <nav class="nav">
+        <div class="nav-item active" onclick="nav('p-mining', this)"><i>⛏️</i>ДОБЫЧА</div>
+        <div class="nav-item" onclick="nav('p-uran', this)"><i>☢️</i>УРАН</div>
+        <div class="nav-item" onclick="nav('p-biz', this)"><i>🏭</i>ЗАВОДЫ</div>
+        <div class="nav-item" onclick="nav('p-market', this)"><i>📈</i>БИРЖА</div>
+        <div class="nav-item" onclick="nav('p-bank', this)"><i>🏦</i>БАНК</div>
+        <div class="nav-item" onclick="nav('p-bonus', this)"><i>🎬</i>БОНУСЫ</div>
+        <div class="nav-item" onclick="nav('p-fortune', this)"><i>🎰</i>КОЛЕСО</div>
+        <div class="nav-item" onclick="nav('p-profile', this)"><i>👤</i>ПРОФИЛЬ</div>
+        <div class="nav-item" onclick="nav('p-lux', this)"><i>💎</i>РОСКОШЬ</div>
+    </nav>
 
-// ============= УВЕДОМЛЕНИЯ =============
-function showGameNotification(message, type = 'success') {
-    document.querySelectorAll('.game-notification').forEach(n => n.remove());
-    const n = document.createElement('div');
-    n.className = `game-notification ${type}`;
-    n.textContent = message;
-    document.body.appendChild(n);
-    setTimeout(() => { if (n.parentNode) n.remove(); }, 2800);
-}
-window.alert = function(m) { showGameNotification(m, 'error'); };
+    <script>
+        // Звуковая система с кнопкой отключения
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = AudioContextClass ? new AudioContextClass() : null;
+        let soundEnabled = true;
 
-// ============= "ЧТО НОВОГО" =============
-function checkAndShowWhatsNew() {
-    if (state.game_version_seen !== GAME_VERSION) {
-        setTimeout(showWhatsNew, 800);
-    }
-}
-
-function showWhatsNew() {
-    const popup = document.getElementById('whats-new-popup');
-    const overlay = document.getElementById('overlay');
-    if (popup && overlay) { popup.style.display = 'block'; overlay.style.display = 'block'; }
-}
-
-function closeWhatsNew() {
-    const popup = document.getElementById('whats-new-popup');
-    const overlay = document.getElementById('overlay');
-    if (popup) popup.style.display = 'none';
-    if (overlay) overlay.style.display = 'none';
-    state.game_version_seen = GAME_VERSION;
-    saveWithDelay();
-}
-
-// ============= РЕКЛАМА ЗА ВОЗНАГРАЖДЕНИЕ (8 БЛОКОВ РСЯ) =============
-// Блок 1 (Индекс 0): 2X Клик
-function activateDoubleClick() {
-    requestRewardedAd(0, () => {
-        state.boost_active = true;
-        state.boost_end = Date.now() + 30000;
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        updateBoostDisplay();
-        playSound(800, 'sine', 0.5);
-        update();
-        showGameNotification('🔥 2X КЛИК АКТИВИРОВАН!', 'success');
-        saveWithDelay();
-    });
-}
-
-// Блок 2 (Индекс 1): +15 000 ₽
-function showRewardedAd() {
-    requestRewardedAd(1, () => {
-        state.m += 15000;
-        state.total_earned += 15000;
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        update();
-        playSound(1000, 'sine', 0.5);
-        showGameNotification('✅ Получено +15 000 ₽!', 'success');
-        saveWithDelay();
-    });
-}
-
-// Блок 3 (Индекс 2): +$50
-function showAdForUSD() {
-    requestRewardedAd(2, () => {
-        state.usd += 50;
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        update();
-        playSound(1000, 'sine', 0.5);
-        showGameNotification('✅ Получено +$50!', 'success');
-        saveWithDelay();
-    });
-}
-
-// Блок 4 (Индекс 3): +1000 нефти
-function showAdForOil() {
-    requestRewardedAd(3, () => {
-        state.o += 1000;
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        update();
-        playSound(1000, 'sine', 0.5);
-        showGameNotification('✅ Получено +1 000 нефти!', 'success');
-        saveWithDelay();
-    });
-}
-
-// Блок 5 (Индекс 4): +1 BTC
-function showAdForBTC() {
-    const now = Date.now();
-    if (now - lastBtcAdTime < BTC_AD_COOLDOWN) {
-        const sec = Math.floor((BTC_AD_COOLDOWN - (now - lastBtcAdTime)) / 1000);
-        showGameNotification(`⏳ Подождите ${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}`, 'error');
-        return;
-    }
-    requestRewardedAd(4, () => {
-        state.btc += 1;
-        lastBtcAdTime = Date.now();
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        update();
-        updateBtcAdTimer();
-        playSound(1000, 'sine', 0.5);
-        showGameNotification('✅ Получен +1 BTC!', 'success');
-        saveWithDelay();
-    });
-}
-
-// Блок 8 (Индекс 7): +50 Урана
-function showAdForUranium() {
-    requestRewardedAd(7, () => {
-        state.uranium += 50;
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        updateUranDisplay();
-        update();
-        playSound(900, 'sine', 0.5);
-        showGameNotification('☢️ Получено +50 Урана!', 'success');
-        saveWithDelay();
-    });
-}
-
-function updateBtcAdTimer() {
-    const now = Date.now();
-    const left = lastBtcAdTime + BTC_AD_COOLDOWN - now;
-    const el = document.getElementById('btc-ad-timer');
-    const btn = document.getElementById('btc-ad-btn');
-    if (!el || !btn) return;
-    if (left > 0) {
-        const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
-        el.innerHTML = `⏳ Доступно через ${m}:${s.toString().padStart(2,'0')}`;
-        btn.disabled = true; btn.style.opacity = '0.5';
-    } else { el.innerHTML = ''; btn.disabled = false; btn.style.opacity = '1'; }
-}
-
-// ============= СЛАЙДЕР =============
-function openOilSlider(action) {
-    if (action === 'sell') {
-        if (state.o <= 0) { showGameNotification('Нет нефти для продажи!', 'error'); return; }
-        currentSliderType = 'oil'; currentSliderAction = 'sell';
-        currentSliderMax = state.o; currentSliderPrice = pOil;
-        document.getElementById('slider-icon').innerHTML = '🛢️';
-        document.getElementById('slider-title').innerHTML = 'Продажа нефти';
-        document.getElementById('slider-min').innerHTML = '0';
-        document.getElementById('slider-max').innerHTML = Math.floor(state.o).toLocaleString();
-        const s = document.getElementById('slider');
-        s.min = 0; s.max = Math.floor(state.o); s.value = Math.floor(state.o); s.step = 1;
-        updateSliderDisplay();
-        document.getElementById('slider-popup').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    }
-}
-
-function openBtcSlider(action) {
-    if (action === 'buy') {
-        const maxBtc = Math.floor(state.m / pBtc);
-        if (maxBtc <= 0) { showGameNotification('Недостаточно рублей!', 'error'); return; }
-        currentSliderType = 'btc'; currentSliderAction = 'buy';
-        currentSliderMax = maxBtc; currentSliderPrice = pBtc;
-        document.getElementById('slider-icon').innerHTML = '₿';
-        document.getElementById('slider-title').innerHTML = 'Покупка BTC';
-        document.getElementById('slider-min').innerHTML = '0';
-        document.getElementById('slider-max').innerHTML = maxBtc.toLocaleString();
-        const s = document.getElementById('slider');
-        s.min = 0; s.max = maxBtc; s.value = Math.min(1, maxBtc); s.step = 1;
-        updateSliderDisplay();
-        document.getElementById('slider-popup').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    } else if (action === 'sell') {
-        if (state.btc <= 0) { showGameNotification('Нет BTC!', 'error'); return; }
-        currentSliderType = 'btc'; currentSliderAction = 'sell';
-        currentSliderMax = state.btc; currentSliderPrice = pBtc;
-        document.getElementById('slider-icon').innerHTML = '₿';
-        document.getElementById('slider-title').innerHTML = 'Продажа BTC';
-        document.getElementById('slider-min').innerHTML = '0';
-        document.getElementById('slider-max').innerHTML = state.btc.toFixed(3);
-        const s = document.getElementById('slider');
-        s.min = 0; s.max = state.btc; s.value = state.btc; s.step = 0.001;
-        updateSliderDisplay();
-        document.getElementById('slider-popup').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-    }
-}
-
-function updateSliderDisplay() {
-    const s = document.getElementById('slider');
-    const amount = parseFloat(s.value) || 0;
-    let total = amount * currentSliderPrice;
-    if (currentSliderType === 'btc' && currentSliderAction === 'sell') {
-        let price = currentSliderPrice;
-        if (state.items.crypto_rig > 0) price = Math.floor(price * (1 + (itemsData[2].bonus * state.items.crypto_rig)));
-        total = amount * price;
-    }
-    if (currentSliderType === 'oil' && currentSliderAction === 'sell') {
-        let price = currentSliderPrice;
-        if (state.items.oil_tank > 0) price = Math.floor(price * (1 + (itemsData[1].bonus * state.items.oil_tank)));
-        total = amount * price;
-    }
-    document.getElementById('slider-amount').innerHTML = currentSliderType === 'btc' ? amount.toFixed(3) : Math.floor(amount).toLocaleString();
-    document.getElementById('slider-total').innerHTML = `Итого: ${Math.floor(total).toLocaleString()} ₽`;
-}
-
-function confirmSlider() {
-    const s = document.getElementById('slider');
-    const amount = parseFloat(s.value);
-    if (amount <= 0) { showGameNotification('Выберите количество!', 'error'); return; }
-    
-    if (currentSliderType === 'oil' && currentSliderAction === 'sell') {
-        let sellAmount = Math.floor(amount);
-        let price = Math.floor(pOil);
-        if (state.items.oil_tank > 0) price = Math.floor(price * (1 + (itemsData[1].bonus * state.items.oil_tank)));
-        if (state.o >= sellAmount) {
-            let gain = sellAmount * price;
-            state.o -= sellAmount; state.m += gain; state.total_earned += gain;
-            playSound(300, 'sine', 0.2);
-            showGameNotification(`Продано ${sellAmount.toLocaleString()} нефти за ${gain.toLocaleString()} ₽`, 'success');
-            saveWithDelay();
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-btn').innerText = soundEnabled ? '🔊' : '🔇';
         }
-    } else if (currentSliderType === 'btc') {
-        if (currentSliderAction === 'buy') {
-            let buyAmount = Math.floor(amount);
-            let cost = buyAmount * pBtc;
+
+        function playSound(type) {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.frequency.value = 400;
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'buy') {
+                    osc.frequency.value = 600;
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.2);
+                } else if (type === 'win') {
+                    osc.frequency.value = 800;
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start(audioCtx.currentTime);
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch(e) {}
+        }
+
+        // Уведомления
+        function showGameNotification(message, color = 'var(--green)') {
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+                background: ${color}; color: white; padding: 12px 24px;
+                border-radius: 12px; font-weight: bold; font-size: 13px;
+                z-index: 9999; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+                animation: slideDown 0.3s ease; text-align: center; max-width: 90%;
+            `;
+            notif.innerText = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // =========================================================================
+        // ЕДИНАЯ СИСТЕМА МОБИЛЬНОЙ РЕКЛАМЫ YANDEX MOBILE ADS (ДЛЯ RUSTORE APK)
+        // Все 8 блоков с вознаграждением (R-M-20330347-1 ... R-M-20330347-8)
+        // и 4 межстраничных блока (R-M-20330347-9 ... R-M-20330347-12)
+        // =========================================================================
+        let pendingRewardCallback = null;
+
+        window.onAndroidAdRewarded = function(blockIdx) {
+            if (typeof pendingRewardCallback === 'function') {
+                const cb = pendingRewardCallback;
+                pendingRewardCallback = null;
+                cb();
+            }
+        };
+
+        window.onAndroidAdClosed = function() {
+            pendingRewardCallback = null;
+        };
+
+        window.onAndroidAdFailed = function(msg) {
+            pendingRewardCallback = null;
+            showGameNotification('⏳ Реклама ещё загружается, попробуйте через пару секунд', 'var(--red)');
+        };
+
+        function requestRewardedAd(blockIndex, onReward) {
+            if (window.Android && typeof window.Android.showRewarded === 'function') {
+                pendingRewardCallback = onReward;
+                window.Android.showRewarded(blockIndex);
+            } else {
+                showGameNotification('⚠️ Реклама доступна в мобильном приложении!', 'var(--red)');
+            }
+        }
+
+        function triggerInterstitialAd() {
+            if (window.Android && typeof window.Android.showInterstitial === 'function') {
+                window.Android.showInterstitial();
+            }
+        }
+
+        // СОСТОЯНИЕ ИГРЫ
+        let state = {
+            m: 1500, o: 0, g: 0, btc: 0, s: 0,
+            usd: 0, uranium: 0, space_oil: 0, rockets: 0,
+            d_lvl: 1, ud_lvl: 1,
+            o_p: 55, btc_p: 2600000, usd_p: 90,
+            o_hist: [50, 52, 55, 53, 58, 60, 55],
+            b_hist: [2500000, 2550000, 2600000, 2580000, 2620000, 2600000],
+            items: {
+                pump: { name: "Нефтекачалка", cost: 400, count: 0, p: 2, cur: 'm' },
+                drill_rig: { name: "Буровая установка", cost: 3000, count: 0, p: 18, cur: 'm' },
+                fracking: { name: "Гидроразрыв пласта", cost: 20000, count: 0, p: 110, cur: 'm' },
+                deep_well: { name: "Сверхглубокая скважина", cost: 150000, count: 0, p: 850, cur: 'm' },
+                ai_drone: { name: "ИИ-Дроны разведчики", cost: 1000000, count: 0, p: 5000, cur: 'm' },
+                quantum_drill: { name: "Квантовый бур", cost: 50000, count: 0, p: 15000, cur: 'usd' },
+                uranium_equipment: { name: "🔓 Урановое оборудование", cost: 100000, count: 0, p: 0, cur: 'usd', special: true }
+            },
+            uran_items: {
+                centrifuge: { name: "Центрифуга обогащения", cost: 2000, count: 0, u_bonus: 2 },
+                reactor: { name: "Ядерный реактор", cost: 10000, count: 0, income: 500 },
+                collider: { name: "Адронный коллайдер", cost: 50000, count: 0, income: 3000 },
+                auto_extractor: { name: "Авто-экстрактор урана", cost: 15000, count: 0, u_auto: 2 }
+            },
+            biz: {
+                refinery: { name: "НПЗ (Завод)", cost: 10000, count: 0, o_use: 10, m_gen: 800, g_gen: 2 },
+                gas_station: { name: "Сеть АЗС", cost: 45000, count: 0, o_use: 30, m_gen: 3200, g_gen: 5 },
+                platform: { name: "Морская платформа", cost: 250000, count: 0, o_use: 0, m_gen: 12000, g_gen: 40 },
+                tanker: { name: "Нефтяной танкер", cost: 1200000, count: 0, o_use: 200, m_gen: 95000, g_gen: 0 }
+            },
+            space: {
+                spaceport: { name: "Космодром", cost: 500, count: 0, cur: 'uranium' },
+                rocket_build: { name: "Построить ракету", cost: 100, count: 0, cur: 'uranium' }
+            },
+            lux: {
+                watch: { name: "Часы Rolex", cost: 500000, bought: false, icon: "⌚" },
+                car: { name: "Lamborghini", cost: 15000000, bought: false, icon: "🏎️" },
+                yacht: { name: "Мега-Яхта", cost: 100000000, bought: false, icon: "🛥️" },
+                jet: { name: "Частный Боинг", cost: 500000000, bought: false, icon: "✈️" },
+                island: { name: "Личный Остров", cost: 5000000000, bought: false, icon: "🏝️" }
+            },
+            rank: 0,
+            quests_completed: [],
+            double_click_active: false,
+            double_click_end: 0,
+            ads_watched: 0,
+            x5_unlocked: false,
+            nickname: "Игрок",
+            last_btc_ad: 0,
+            used_promos: [],
+            last_save_time: Date.now()
+        };
+
+        const ranks = [
+            { name: "Новичок", req: 0, bonus: 0 },
+            { name: "Бурильщик", req: 10000, bonus: 5 },
+            { name: "Нефтяник", req: 100000, bonus: 10 },
+            { name: "Барон", req: 1000000, bonus: 20 },
+            { name: "Магнат", req: 10000000, bonus: 35 },
+            { name: "Олигарх", req: 100000000, bonus: 50 },
+            { name: "Король нефти", req: 1000000000, bonus: 75 },
+            { name: "Властелин энергии", req: 10000000000, bonus: 100 },
+            { name: "Космический император", req: 100000000000, bonus: 150 },
+            { name: "Галактический титан", req: 1000000000000, bonus: 200 },
+            { name: "Повелитель Вселенной", req: 10000000000000, bonus: 300 },
+            { name: "Бог Нефти", req: 100000000000000, bonus: 500 }
+        ];
+
+        const quests = [
+            { id: 'oil_1000', name: 'Добыть 1,000 нефти', desc: 'Накопите 1,000 баррелей нефти', check: () => state.o >= 1000, reward_usd: 50 },
+            { id: 'money_50k', name: 'Заработать 50,000 ₽', desc: 'Накопите 50,000 рублей', check: () => state.m >= 50000, reward_usd: 100 },
+            { id: 'buy_refinery', name: 'Построить НПЗ', desc: 'Купите первый нефтеперерабатывающий завод', check: () => state.biz.refinery.count >= 1, reward_usd: 150 },
+            { id: 'uran_10', name: 'Добыть 10 урана', desc: 'Накопите 10 единиц урана', check: () => state.uranium >= 10, reward_usd: 300 },
+            { id: 'rocket_1', name: 'Запустить ракету', desc: 'Постройте первую космическую ракету', check: () => state.rockets >= 1, reward_usd: 1000 },
+            { id: 'space_oil_100', name: 'Космическая добыча', desc: 'Добудьте 100 космо-нефти', check: () => state.space_oil >= 100, reward_usd: 2000 }
+        ];
+
+        const defaultBots = [
+            { name: "Нефтяной Барон", money: 15000000000, rank: "Властелин энергии", isBot: true },
+            { name: "Шейх Аль-Мактум", money: 8500000000, rank: "Король нефти", isBot: true },
+            { name: "Рокфеллер Jr", money: 3200000000, rank: "Король нефти", isBot: true },
+            { name: "Техасский Магнат", money: 950000000, rank: "Олигарх", isBot: true },
+            { name: "Сибирский Бурильщик", money: 420000000, rank: "Олигарх", isBot: true },
+            { name: "Каспийский Волк", money: 180000000, rank: "Олигарх", isBot: true },
+            { name: "Арктический Титан", money: 75000000, rank: "Магнат", isBot: true },
+            { name: "Урановый Король", money: 28000000, rank: "Магнат", isBot: true },
+            { name: "Чёрное Золото", money: 9500000, rank: "Барон", isBot: true }
+        ];
+
+        function loadGame() {
+            const saved = localStorage.getItem('oil_magnat_save');
+            if (saved) {
+                try {
+                    const loaded = JSON.parse(saved);
+                    state = Object.assign({}, state, loaded);
+                    if (!state.uran_items.auto_extractor) {
+                        state.uran_items.auto_extractor = { name: "Авто-экстрактор урана", cost: 15000, count: 0, u_auto: 2 };
+                    }
+                    // Расчет оффлайн-добычи (до 12 часов)
+                    if (state.last_save_time) {
+                        const elapsedSec = Math.min(43200, Math.floor((Date.now() - state.last_save_time) / 1000));
+                        if (elapsedSec > 60) {
+                            let autoOil = 0;
+                            for (let k in state.items) autoOil += state.items[k].count * (state.items[k].p || 0);
+                            if (autoOil > 0) {
+                                const earnedOil = Math.floor(autoOil * elapsedSec * 0.5);
+                                state.o += earnedOil;
+                                setTimeout(() => {
+                                    showGameNotification(`🛢️ За время отсутствия добыто +${earnedOil.toLocaleString()} нефти!`, 'var(--gold)');
+                                }, 800);
+                            }
+                        }
+                    }
+                } catch(e) {}
+            }
+        }
+
+        function saveGame() {
+            state.last_save_time = Date.now();
+            localStorage.setItem('oil_magnat_save', JSON.stringify(state));
+            savePlayerToGlobalLeaderboard();
+        }
+
+        function savePlayerToGlobalLeaderboard() {
+            try {
+                let globalPlayers = [];
+                const savedPlayers = localStorage.getItem('oil_magnat_players');
+                if (savedPlayers) globalPlayers = JSON.parse(savedPlayers);
+
+                let playerId = localStorage.getItem('oil_magnat_player_id');
+                if (!playerId) {
+                    playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('oil_magnat_player_id', playerId);
+                }
+
+                const totalWealth = Math.floor(
+                    state.m +
+                    (state.usd * state.usd_p) +
+                    (state.btc * state.btc_p) +
+                    state.s +
+                    (state.o * state.o_p) +
+                    (state.uranium * 500 * state.usd_p)
+                );
+
+                const playerData = {
+                    id: playerId,
+                    name: state.nickname || "Игрок",
+                    money: totalWealth,
+                    rank: ranks[state.rank].name,
+                    lastUpdate: Date.now(),
+                    isBot: false
+                };
+
+                const existingIndex = globalPlayers.findIndex(p => p.id === playerId);
+                if (existingIndex !== -1) {
+                    globalPlayers[existingIndex] = playerData;
+                } else {
+                    globalPlayers.push(playerData);
+                }
+
+                globalPlayers.sort((a, b) => b.money - a.money);
+                if (globalPlayers.length > 50) globalPlayers = globalPlayers.slice(0, 50);
+
+                localStorage.setItem('oil_magnat_players', JSON.stringify(globalPlayers));
+            } catch(e) {}
+        }
+
+        function getGlobalLeaderboard() {
+            let allPlayers = [...defaultBots];
+            try {
+                const savedPlayers = localStorage.getItem('oil_magnat_players');
+                if (savedPlayers) {
+                    const realPlayers = JSON.parse(savedPlayers);
+                    allPlayers = allPlayers.concat(realPlayers);
+                }
+            } catch(e) {}
+            return allPlayers;
+        }
+
+        loadGame();
+
+        function init() {
+            renderAll();
+            setInterval(gameLoop, 1000);
+            setInterval(marketLoop, 4000);
+            setInterval(bankLoop, 30000);
+            setInterval(randomEventLoop, 45000);
+            setInterval(saveGame, 5000);
+            setupCharts();
+        }
+
+        // КЛИК ПО ВЫШКЕ (НЕФТЬ)
+        const trigger = document.getElementById('drill-trigger');
+        trigger.addEventListener('pointerdown', (e) => {
+            let pow = 1 + (state.d_lvl - 1) * 2;
+            if (state.double_click_active) pow *= 2;
+            const bonus = 1 + (ranks[state.rank].bonus / 100);
+            pow = Math.floor(pow * bonus);
+            state.o += pow;
+            playSound('click');
+            spawnFloatingText(e.clientX, e.clientY, `+${pow} 🛢️`);
+            updateUI();
+        });
+
+        // КЛИК ПО УРАНОВОЙ ШАХТЕ
+        const uranTrigger = document.getElementById('uran-drill-trigger');
+        uranTrigger.addEventListener('pointerdown', (e) => {
+            let pow = state.ud_lvl;
+            for (let k in state.uran_items) {
+                if (state.uran_items[k].u_bonus) {
+                    pow += state.uran_items[k].count * state.uran_items[k].u_bonus;
+                }
+            }
+            state.uranium += pow;
+            playSound('click');
+            spawnFloatingText(e.clientX, e.clientY, `+${pow} ☢️`);
+            updateUI();
+        });
+
+        function spawnFloatingText(x, y, txt) {
+            const f = document.createElement('div');
+            f.className = 'floating';
+            f.style.left = `${x - 20}px`;
+            f.style.top = `${y - 20}px`;
+            f.innerText = txt;
+            document.body.appendChild(f);
+            setTimeout(() => f.remove(), 700);
+        }
+
+        // БЛОК №1 (R-M-20330347-1): 2X КЛИК НА 30 СЕКУНД
+        function activateDoubleClick() {
+            if (state.double_click_active) return;
+            requestRewardedAd(0, () => {
+                startDoubleClick();
+            });
+        }
+
+        function startDoubleClick() {
+            state.double_click_active = true;
+            state.double_click_end = Date.now() + 30000;
+            document.getElementById('double-click-btn').disabled = true;
+            document.getElementById('boost-timer').style.display = 'inline';
+            playSound('win');
+            showGameNotification('⚡ 2X Клик активирован на 30 секунд!');
+        }
+
+        // ОСНОВНОЙ ЦИКЛ (1 СЕК)
+        function gameLoop() {
+            const bonus = 1 + (ranks[state.rank].bonus / 100);
+
+            if (state.double_click_active) {
+                const rem = Math.ceil((state.double_click_end - Date.now()) / 1000);
+                if (rem <= 0) {
+                    state.double_click_active = false;
+                    document.getElementById('double-click-btn').disabled = false;
+                    document.getElementById('boost-timer').style.display = 'none';
+                } else {
+                    document.getElementById('boost-sec').innerText = rem;
+                }
+            }
+
+            let autoOil = 0;
+            for (let k in state.items) {
+                autoOil += state.items[k].count * state.items[k].p;
+            }
+            state.o += Math.floor(autoOil * bonus);
+
+            for (let k in state.biz) {
+                let b = state.biz[k];
+                if (b.count > 0) {
+                    let totalOilNeeded = b.o_use * b.count;
+                    if (state.o >= totalOilNeeded) {
+                        state.o -= totalOilNeeded;
+                        state.m += Math.floor(b.m_gen * b.count * bonus);
+                        state.g += b.g_gen * b.count;
+                    }
+                }
+            }
+
+            for (let k in state.uran_items) {
+                let u = state.uran_items[k];
+                if (u.income && u.count > 0) {
+                    state.usd += u.income * u.count;
+                }
+                if (u.u_auto && u.count > 0) {
+                    state.uranium += u.u_auto * u.count;
+                }
+            }
+
+            checkRankUp();
+            checkQuests();
+            updateUI();
+        }
+
+        function checkRankUp() {
+            for (let i = ranks.length - 1; i >= 0; i--) {
+                if (state.m >= ranks[i].req && state.rank < i) {
+                    state.rank = i;
+                    playSound('win');
+                    showGameNotification(`🎉 Новый ранг: ${ranks[i].name}! Бонус +${ranks[i].bonus}%`);
+                    break;
+                }
+            }
+        }
+
+        function checkQuests() {
+            quests.forEach(q => {
+                if (!state.quests_completed.includes(q.id) && q.check()) {
+                    state.quests_completed.push(q.id);
+                    state.usd += q.reward_usd;
+                    playSound('win');
+                    showGameNotification(`✅ Квест выполнен: ${q.name}! Награда: +${q.reward_usd} $`);
+                    renderQuests();
+                }
+            });
+        }
+
+        function marketLoop() {
+            let o_ch = Math.floor(Math.random() * 15) - 7;
+            state.o_p = Math.max(20, Math.min(180, state.o_p + o_ch));
+            state.o_hist.push(state.o_p);
+            if (state.o_hist.length > 15) state.o_hist.shift();
+
+            let b_ch = Math.floor(Math.random() * 200000) - 95000;
+            state.btc_p = Math.max(1000000, state.btc_p + b_ch);
+            state.b_hist.push(state.btc_p);
+            if (state.b_hist.length > 15) state.b_hist.shift();
+
+            let u_ch = Math.floor(Math.random() * 7) - 3;
+            state.usd_p = Math.max(70, Math.min(120, state.usd_p + u_ch));
+
+            drawChart('oilChart', state.o_hist, '#10b981');
+            drawChart('btcChart', state.b_hist, '#f59e0b');
+            updateUI();
+        }
+
+        function bankLoop() {
+            if (state.s > 0) {
+                state.s = Math.floor(state.s * 1.01);
+                updateUI();
+            }
+        }
+
+        // СЛУЧАЙНЫЕ СОБЫТИЯ (Блок №7 для отмены негативных событий)
+        let currentEvent = null;
+        const events = [
+            {
+                title: "🛢️ Нефтяной бум!",
+                desc: "Цены на нефть взлетели! Получите +500 нефти бесплатно!",
+                positive: true,
+                action: () => { state.o += 500; }
+            },
+            {
+                title: "💰 Инвестиционный грант",
+                desc: "Государство выделило вам субсидию 25,000 ₽!",
+                positive: true,
+                action: () => { state.m += 25000; }
+            },
+            {
+                title: "💵 Валютный бонус",
+                desc: "Иностранный партнёр перевёл вам 200 $!",
+                positive: true,
+                action: () => { state.usd += 200; }
+            },
+            {
+                title: "⚠️ Авария на трубопроводе",
+                desc: "Утечка нефти! Вы теряете 30% запасов нефти.",
+                positive: false,
+                action: () => { state.o = Math.floor(state.o * 0.7); }
+            },
+            {
+                title: "🔥 Пожар на вышке",
+                desc: "Штраф за экологию! Списано 20% рублей.",
+                positive: false,
+                action: () => { state.m = Math.floor(state.m * 0.8); }
+            }
+        ];
+
+        function randomEventLoop() {
+            if (Math.random() < 0.5) {
+                currentEvent = events[Math.floor(Math.random() * events.length)];
+                document.getElementById('event-title').innerText = currentEvent.title;
+                document.getElementById('event-desc').innerText = currentEvent.desc;
+
+                const declineBtn = document.getElementById('event-decline-btn');
+                const acceptBtn = document.getElementById('event-accept-btn');
+
+                if (currentEvent.positive) {
+                    acceptBtn.innerText = 'ПРИНЯТЬ';
+                    declineBtn.style.display = 'none';
+                } else {
+                    acceptBtn.innerText = 'СМИРИТЬСЯ';
+                    declineBtn.style.display = 'block';
+                    declineBtn.innerText = '🎬 ОТМЕНИТЬ (РЕКЛАМА)';
+                    declineBtn.onclick = watchAdForDecline;
+                }
+
+                document.getElementById('event-popup').classList.add('active');
+            }
+        }
+
+        function acceptEvent() {
+            if (currentEvent) {
+                currentEvent.action();
+                playSound('buy');
+                updateUI();
+            }
+            closeEvent();
+        }
+
+        // БЛОК №7 (R-M-20330347-7): ОТМЕНА АВАРИИ ИЛИ ШТРАФА ЗА РЕКЛАМУ
+        function watchAdForDecline() {
+            requestRewardedAd(6, () => {
+                playSound('win');
+                showGameNotification('✅ Негативное событие успешно предотвращено!');
+                closeEvent();
+            });
+        }
+
+        function closeEvent() {
+            document.getElementById('event-popup').classList.remove('active');
+            currentEvent = null;
+        }
+
+        // ПОПАПЫ С ПОЛЗУНКОМ
+        let currentTradeType = null;
+
+        function openOilSellPopup() {
+            if (state.o <= 0) return;
+            currentTradeType = 'oil_sell';
+            document.getElementById('popup-title').innerText = 'Продажа нефти';
+            const slider = document.getElementById('trade-slider');
+            slider.max = Math.floor(state.o);
+            slider.value = Math.floor(state.o);
+            updateSliderInfo();
+            document.getElementById('trade-popup').classList.add('active');
+        }
+
+        function openBtcBuyPopup() {
+            const maxBtc = Math.floor((state.m / state.btc_p) * 1000) / 1000;
+            if (maxBtc <= 0) return;
+            currentTradeType = 'btc_buy';
+            document.getElementById('popup-title').innerText = 'Покупка Bitcoin';
+            const slider = document.getElementById('trade-slider');
+            slider.max = Math.floor(maxBtc * 1000);
+            slider.value = Math.floor(maxBtc * 500);
+            updateSliderInfo();
+            document.getElementById('trade-popup').classList.add('active');
+        }
+
+        function openBtcSellPopup() {
+            if (state.btc <= 0) return;
+            currentTradeType = 'btc_sell';
+            document.getElementById('popup-title').innerText = 'Продажа Bitcoin';
+            const slider = document.getElementById('trade-slider');
+            slider.max = Math.floor(state.btc * 1000);
+            slider.value = Math.floor(state.btc * 1000);
+            updateSliderInfo();
+            document.getElementById('trade-popup').classList.add('active');
+        }
+
+        function openUsdBuyPopup() {
+            const maxUsd = Math.floor(state.m / state.usd_p);
+            if (maxUsd <= 0) return;
+            currentTradeType = 'usd_buy';
+            document.getElementById('popup-title').innerText = 'Покупка долларов';
+            const slider = document.getElementById('trade-slider');
+            slider.max = maxUsd;
+            slider.value = Math.floor(maxUsd / 2);
+            updateSliderInfo();
+            document.getElementById('trade-popup').classList.add('active');
+        }
+
+        function openUsdSellPopup() {
+            if (state.usd <= 0) return;
+            currentTradeType = 'usd_sell';
+            document.getElementById('popup-title').innerText = 'Продажа долларов';
+            const slider = document.getElementById('trade-slider');
+            slider.max = Math.floor(state.usd);
+            slider.value = Math.floor(state.usd);
+            updateSliderInfo();
+            document.getElementById('trade-popup').classList.add('active');
+        }
+
+        document.getElementById('trade-slider').addEventListener('input', updateSliderInfo);
+
+        function updateSliderInfo() {
+            const val = parseFloat(document.getElementById('trade-slider').value);
+            const amountEl = document.getElementById('slider-amount');
+            const totalEl = document.getElementById('slider-total');
+
+            if (currentTradeType === 'oil_sell') {
+                amountEl.innerText = `${val} 🛢️`;
+                totalEl.innerText = (val * state.o_p).toLocaleString();
+            } else if (currentTradeType === 'btc_buy') {
+                const btcAmount = (val / 1000).toFixed(3);
+                amountEl.innerText = `${btcAmount} ₿`;
+                totalEl.innerText = Math.floor(btcAmount * state.btc_p).toLocaleString();
+            } else if (currentTradeType === 'btc_sell') {
+                const btcAmount = (val / 1000).toFixed(3);
+                amountEl.innerText = `${btcAmount} ₿`;
+                totalEl.innerText = Math.floor(btcAmount * state.btc_p).toLocaleString();
+            } else if (currentTradeType === 'usd_buy') {
+                amountEl.innerText = `${val} $`;
+                totalEl.innerText = (val * state.usd_p).toLocaleString();
+            } else if (currentTradeType === 'usd_sell') {
+                amountEl.innerText = `${val} $`;
+                totalEl.innerText = (val * state.usd_p).toLocaleString();
+            }
+        }
+
+        function confirmTrade() {
+            const val = parseFloat(document.getElementById('trade-slider').value);
+            if (val <= 0) return closeTradePopup();
+
+            if (currentTradeType === 'oil_sell') {
+                state.m += val * state.o_p;
+                state.o -= val;
+            } else if (currentTradeType === 'btc_buy') {
+                const btcAmount = val / 1000;
+                const cost = Math.floor(btcAmount * state.btc_p);
+                if (state.m >= cost) {
+                    state.m -= cost;
+                    state.btc += btcAmount;
+                }
+            } else if (currentTradeType === 'btc_sell') {
+                const btcAmount = val / 1000;
+                state.m += Math.floor(btcAmount * state.btc_p);
+                state.btc -= btcAmount;
+            } else if (currentTradeType === 'usd_buy') {
+                const cost = val * state.usd_p;
+                if (state.m >= cost) {
+                    state.m -= cost;
+                    state.usd += val;
+                }
+            } else if (currentTradeType === 'usd_sell') {
+                state.m += val * state.usd_p;
+                state.usd -= val;
+            }
+
+            playSound('buy');
+            closeTradePopup();
+            updateUI();
+        }
+
+        function closeTradePopup() {
+            document.getElementById('trade-popup').classList.remove('active');
+            currentTradeType = null;
+        }
+
+        // УЛУЧШЕНИЯ И ПОКУПКИ
+        function upDrill() {
+            let cost = state.d_lvl * 100;
             if (state.m >= cost) {
-                state.m -= cost; state.btc += buyAmount;
-                playSound(600, 'sine', 0.1);
-                showGameNotification(`Куплено ${buyAmount} BTC`, 'success');
-                saveWithDelay();
-            }
-        } else if (currentSliderAction === 'sell') {
-            let sellAmount = amount;
-            let price = pBtc;
-            if (state.items.crypto_rig > 0) price = Math.floor(price * (1 + (itemsData[2].bonus * state.items.crypto_rig)));
-            if (state.btc >= sellAmount) {
-                let gain = sellAmount * price;
-                state.btc -= sellAmount; state.m += gain; state.total_earned += gain;
-                playSound(700, 'sine', 0.1);
-                showGameNotification(`Продано ${sellAmount.toFixed(3)} BTC`, 'success');
-                saveWithDelay();
+                state.m -= cost;
+                state.d_lvl++;
+                playSound('buy');
+                updateUI();
             }
         }
-    }
-    closeSlider(); update();
-}
 
-function closeSlider() {
-    document.getElementById('slider-popup').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-    currentSliderType = null; currentSliderAction = null;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const sl = document.getElementById('slider');
-    if (sl) sl.addEventListener('input', updateSliderDisplay);
-});
-
-// ============= ДАННЫЕ И ЗВУК =============
-const uraniumItemsData = [
-    { id: 'auto_extractor', name_ru: 'Авто-экстрактор', name_en: 'Auto Extractor', icon: '⚙️', price: 50000, bonus: 0.5 },
-    { id: 'enrichment_plant', name_ru: 'Обогатительная фабрика', name_en: 'Enrichment Plant', icon: '🏭', price: 200000, bonus: 0.2 },
-    { id: 'radiation_shield', name_ru: 'Радиационная защита', name_en: 'Radiation Shield', icon: '🛡️', price: 1000000, bonus: 0.3 }
-];
-
-let usdRate = 75;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-var lastPageChange = Date.now();
-var currentPage = 'mining';
-
-const promo_codes = {
-    "OILMAGNAT2024": { rub: 10000, usd: 5, oil: 500 },
-    "BLACKGOLD100": { rub: 25000, usd: 3, oil: 1000 },
-    "SPACEOIL50": { rub: 5000, usd: 2, oil: 2000 },
-    "START1000": { rub: 1000, usd: 1, oil: 100 },
-    "CRYPTOBOSS": { rub: 15000, usd: 7, oil: 300 }
-};
-
-const wheel_prizes = [
-    { type: 'rub', amount: 5000, icon: '💰', color: '#ffcc00', text: '5.000 ₽' },
-    { type: 'rub', amount: 10000, icon: '💎', color: '#00ff88', text: '10.000 ₽' },
-    { type: 'oil', amount: 500, icon: '🛢️', color: '#ff3366', text: '500 нефти' },
-    { type: 'usd', amount: 5, icon: '💵', color: '#00cc00', text: '$5' },
-    { type: 'rub', amount: 2000, icon: '💰', color: '#ff9966', text: '2.000 ₽' },
-    { type: 'oil', amount: 1000, icon: '🛢️', color: '#ff6600', text: '1.000 нефти' },
-    { type: 'usd', amount: 10, icon: '💎', color: '#0099ff', text: '$10' },
-    { type: 'rub', amount: 15000, icon: '🎁', color: '#cc00ff', text: '15.000 ₽' }
-];
-
-const vip_wheel_prizes = wheel_prizes.map(p => ({ ...p, amount: p.amount * 5, text: p.type === 'rub' ? `${(p.amount * 5).toLocaleString()} ₽` : p.type === 'oil' ? `${p.amount * 5} нефти` : `$${p.amount * 5}` }));
-
-function toggleSound() {
-    soundEnabled = !soundEnabled;
-    const btn = document.getElementById('sound-toggle-btn');
-    if (btn) btn.innerText = soundEnabled ? '🔊' : '🔇';
-    showGameNotification(soundEnabled ? '🔊 Звук включен' : '🔇 Звук выключен', 'success');
-}
-
-function playSound(freq, type, dur) {
-    if (!soundEnabled) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    try {
-        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + dur);
-    } catch(e) {}
-}
-
-const i18n = {
-    ru: { mine: "ДОБЫЧА", prof: "ПРОФИЛЬ", biz: "БИЗНЕС", mkt: "БИРЖА", bank: "БАНК", gift: "БОНУС", lux: "ЛЮКС", fortune: "КОЛЕСО", oil: "НЕФТЬ", gas: "БЕНЗИН", crypto: "КРИПТО", upg: "Улучшить бур", next: "До след. ранга:", q: "🎯 Задания", brent: "НЕФТЬ BRENT", sell_all: "ПРОДАТЬ НЕФТЬ", buy: "КУПИТЬ", sell: "ПРОДАТЬ", bonus_t: "Премиум Бонус", bonus_d: "Посмотри короткую рекламу и получи +15 000 ₽!", watch: "🎬 ПОЛУЧИТЬ +15 000 ₽", bank_t: "Центральный Банк", dep: "ВНЕСТИ 25%", wd: "СНЯТЬ ВСЁ", usd: "USD" }
-};
-
-const quests = [
-    { id: 'q1', ru: 'Начало пути (5 000 ₽)', en: 'First Steps', goal: 5000, prize: 1000 },
-    { id: 'q2', ru: 'Нефтяник (1 000 нефти)', en: 'Oilman', goal: 1000, prize: 5000 },
-    { id: 'q3', ru: 'Промышленник (5 НПЗ)', en: 'Businessman', goal: 5, prize: 20000 },
-    { id: 'q4', ru: 'Миллионер (1 000 000 ₽)', en: 'Millionaire', goal: 1000000, prize: 100000 }
-];
-
-const itemsData = [
-    { id: 'gold_drill', name_ru: 'Золотой бур (+2 к клику)', name_en: 'Gold Drill', icon: '⚙️', price: 50000, bonus: 2 },
-    { id: 'oil_tank', name_ru: 'Нефтяной танк (+10% цена)', name_en: 'Oil Tank', icon: '🛢️', price: 150000, bonus: 0.1 },
-    { id: 'crypto_rig', name_ru: 'Крипто-ферма (+5% BTC)', name_en: 'Crypto Rig', icon: '💻', price: 300000, bonus: 0.05 },
-    { id: 'stock_tips', name_ru: 'Инсайд биржи (+3% курс)', name_en: 'Stock Tips', icon: '📈', price: 1000000, bonus: 0.03 },
-    { id: 'uranium_equipment', name_ru: 'Допуск к Урану', name_en: 'Uranium Equipment', icon: '☢️', price: 100000, bonus: 1, price_currency: 'usd' }
-];
-
-let pOil = 15, pBtc = 40000;
-let hOil = [15,16,14,15,17], hBtc = [40000, 41000, 39500, 40200, 42000];
-
-// ============= УРАН =============
-function switchToUranClicker() {
-    if (state.items.uranium_equipment > 0) {
-        currentClicker = 'uran';
-        nav('uran', null);
-        updateUranDisplay();
-    } else {
-        showGameNotification('Купите Допуск к Урану за $100,000!', 'error');
-    }
-}
-
-function switchToOilClicker() {
-    currentClicker = 'oil';
-    nav('mining', document.querySelector('.n-item[onclick*="mining"]'));
-}
-
-function renderUranItems() {
-    let html = '';
-    uraniumItemsData.forEach(item => {
-        const owned = state.uranium_items[item.id] || 0;
-        const name = item.name_ru;
-        const canBuy = state.usd >= item.price;
-        html += `<div class="item-card" style="border-color: var(--uran);">
-            <div class="item-icon">${item.icon}</div>
-            <div class="item-name">${name}</div>
-            <div class="item-price">${item.price.toLocaleString()} $</div>
-            <div class="item-owned">${owned} шт.</div>
-            <button class="btn-main" style="margin-top:4px;padding:5px 8px;font-size:10px;background:var(--uran);color:black;" 
-                    onclick="buyUraniumItem('${item.id}', ${item.price})" ${!canBuy ? 'disabled' : ''}>
-                КУПИТЬ
-            </button>
-        </div>`;
-    });
-    const container = document.getElementById('uran-items-container');
-    if (container) container.innerHTML = html;
-}
-
-function buyUraniumItem(itemId, price) {
-    if (state.usd >= price) {
-        state.usd -= price;
-        if (!state.uranium_items[itemId]) state.uranium_items[itemId] = 0;
-        state.uranium_items[itemId]++;
-        playSound(600, 'sine', 0.2);
-        updateUranDisplay(); renderUranItems(); update();
-        showGameNotification('✅ Улучшение куплено!', 'success');
-        saveWithDelay();
-    } else {
-        showGameNotification('❌ Недостаточно $!', 'error');
-    }
-}
-
-function updateUranDisplay() {
-    if (document.getElementById('uran-val')) {
-        document.getElementById('uran-val').innerText = Math.floor(state.uranium).toLocaleString();
-        document.getElementById('uran-level-val').innerText = state.uranium_drill;
-        let price = 2000;
-        if (state.uranium_items.enrichment_plant > 0) price = Math.floor(price * (1 + 0.2 * state.uranium_items.enrichment_plant));
-        document.getElementById('uran-price-val').innerText = price.toLocaleString();
-        let cost = Math.floor(20000 * Math.pow(1.8, state.uranium_drill - 1));
-        document.getElementById('uran-dr-info').innerText = 'Уровень ' + state.uranium_drill;
-        document.getElementById('btn-uran-upg-val').innerText = cost.toLocaleString() + ' $';
-        document.getElementById('btn-uran-upg-val').disabled = state.usd < cost;
-    }
-}
-
-function buyUranUpgrade() {
-    let cost = Math.floor(20000 * Math.pow(1.8, state.uranium_drill - 1));
-    if (state.usd >= cost) { state.usd -= cost; state.uranium_drill++; playSound(600, 'sine', 0.2); updateUranDisplay(); update(); saveWithDelay(); }
-}
-
-function sellUranAll() {
-    if (state.uranium <= 0) { showGameNotification('Нет урана для продажи!', 'error'); return; }
-    let price = 2000;
-    if (state.uranium_items.enrichment_plant > 0) price = Math.floor(price * (1 + 0.2 * state.uranium_items.enrichment_plant));
-    let gain = Math.floor(state.uranium) * price;
-    state.usd += gain; state.uranium = 0;
-    playSound(300, 'sine', 0.2);
-    showGameNotification(`☢️ Продано за $${gain.toLocaleString()}!`, 'success');
-    updateUranDisplay(); update(); saveWithDelay();
-}
-
-// ============= КОЛЕСО ФОРТУНЫ (Блок 6 - Индекс 5) =============
-function renderWheel() {
-    const wheel = document.getElementById('wheel');
-    const vipWheel = document.getElementById('vip-wheel');
-    const wPrizes = document.getElementById('wheel-prizes');
-    const vPrizes = document.getElementById('vip-wheel-prizes');
-    if (!wheel || !vipWheel) return;
-    wheel.innerHTML = ''; vipWheel.innerHTML = ''; wPrizes.innerHTML = ''; vPrizes.innerHTML = '';
-    
-    wheel_prizes.forEach((p, i) => {
-        const a = (360 / wheel_prizes.length) * i;
-        const seg = document.createElement('div');
-        seg.className = 'wheel-segment';
-        seg.style.transform = `rotate(${a}deg)`;
-        seg.style.background = p.color;
-        seg.innerHTML = `<div class="wheel-segment-content">${p.icon}<br>${p.text}</div>`;
-        wheel.appendChild(seg);
-        const card = document.createElement('div');
-        card.style.cssText = `background:${p.color};padding:4px;border-radius:6px;text-align:center;color:#000;font-size:9px;font-weight:bold;`;
-        card.innerHTML = p.icon + ' ' + p.text;
-        wPrizes.appendChild(card);
-    });
-    
-    vip_wheel_prizes.forEach((p, i) => {
-        const a = (360 / vip_wheel_prizes.length) * i;
-        const seg = document.createElement('div');
-        seg.className = 'wheel-segment';
-        seg.style.transform = `rotate(${a}deg)`;
-        seg.style.background = p.color;
-        seg.innerHTML = `<div class="wheel-segment-content">${p.icon}<br>${p.text}</div>`;
-        vipWheel.appendChild(seg);
-        const card = document.createElement('div');
-        card.style.cssText = `background:${p.color};padding:4px;border-radius:6px;text-align:center;color:#000;font-size:9px;font-weight:bold;`;
-        card.innerHTML = p.icon + ' ' + p.text;
-        vPrizes.appendChild(card);
-    });
-    updateWheelTimer();
-}
-
-function updateWheelTimer() {
-    const now = Date.now();
-    const left = Math.max(0, (state.last_free_spin || 0) + 24*60*60*1000 - now);
-    const h = Math.floor(left / (1000*60*60)), m = Math.floor((left % (1000*60*60)) / (1000*60)), s = Math.floor((left % (1000*60)) / 1000);
-    const str = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    const fst = document.getElementById('free-spin-timer');
-    if (fst) fst.textContent = str;
-    const aw = document.getElementById('ads-watched');
-    if (aw) aw.textContent = `${state.ads_watched||0}/10`;
-    const wt = document.getElementById('wheel-timer');
-    if (wt) wt.textContent = `Следующий бесплатный спин через: ${str}`;
-    const freeBtn = document.getElementById('free-spin-btn');
-    if (freeBtn) { freeBtn.disabled = left > 0; freeBtn.textContent = left > 0 ? `🎁 БЕСПЛАТНЫЙ СПИН (${str})` : '🎁 БЕСПЛАТНЫЙ СПИН'; }
-    const vipBtn = document.getElementById('vip-spin-btn');
-    if (vipBtn) { vipBtn.disabled = (state.ads_watched||0) < 10; vipBtn.textContent = (state.ads_watched||0) >= 10 ? '👑 КРУТИТЬ VIP КОЛЕСО' : `👑 НУЖНО 10 РЕКЛАМ (${state.ads_watched||0}/10)`; }
-}
-
-function spinWheel(type) {
-    if (isPaused) return;
-    if (type === 'free') {
-        const now = Date.now();
-        if (now - (state.last_free_spin||0) < 24*60*60*1000) { showGameNotification('Спин раз в 24 часа!', 'error'); return; }
-        state.last_free_spin = now;
-        performSpin('normal');
-        saveWithDelay();
-    } else if (type === 'ad') {
-        const btn = document.getElementById('ad-spin-btn');
-        if (btn) { btn.disabled = true; btn.textContent = '📺 ЗАГРУЗКА...'; }
-        requestRewardedAd(5, () => {
-            state.ads_watched = (state.ads_watched || 0) + 1;
-            if (btn) { btn.disabled = false; btn.textContent = '📺 СПИН ЗА РЕКЛАМУ'; }
-            performSpin('normal');
-            updateWheelTimer();
-            saveWithDelay();
-        });
-    }
-}
-
-function spinVipWheel() {
-    if (isPaused) return;
-    if ((state.ads_watched||0) < 10) { showGameNotification('Нужно посмотреть 10 реклам!', 'error'); return; }
-    state.ads_watched -= 10;
-    performSpin('vip');
-    updateWheelTimer();
-    saveWithDelay();
-}
-
-function performSpin(type) {
-    const wheel = document.getElementById(type === 'vip' ? 'vip-wheel' : 'wheel');
-    const prizes = type === 'vip' ? vip_wheel_prizes : wheel_prizes;
-    if (!wheel) return;
-    document.getElementById('free-spin-btn').disabled = true;
-    document.getElementById('ad-spin-btn').disabled = true;
-    document.getElementById('vip-spin-btn').disabled = true;
-    
-    const idx = Math.floor(Math.random() * prizes.length);
-    const prize = prizes[idx];
-    const segAngle = 360 / prizes.length;
-    const target = 2160 + idx * segAngle;
-    wheel.style.transition = 'transform 4s cubic-bezier(0.2,0.8,0.3,1)';
-    wheel.style.transform = `rotate(${target}deg)`;
-    playSound(300, 'sawtooth', 3);
-    setTimeout(() => {
-        showPrize(prize, type);
-        setTimeout(() => {
-            wheel.style.transition = 'none';
-            wheel.style.transform = 'rotate(0deg)';
-            updateWheelTimer();
-        }, 1500);
-    }, 4000);
-}
-
-function showPrize(prize, type) {
-    const popup = document.getElementById('prize-popup');
-    const overlay = document.getElementById('overlay');
-    if (!popup || !overlay) return;
-    document.getElementById('prize-icon').textContent = prize.icon;
-    document.getElementById('prize-title').textContent = type === 'vip' ? 'VIP ВЫИГРЫШ!' : 'ВЫ ВЫИГРАЛИ!';
-    if (prize.type === 'rub') { state.m += prize.amount; state.total_earned += prize.amount; document.getElementById('prize-amount').textContent = `+${prize.amount.toLocaleString()} ₽`; }
-    else if (prize.type === 'oil') { state.o += prize.amount; document.getElementById('prize-amount').textContent = `+${prize.amount.toLocaleString()} нефти`; }
-    else if (prize.type === 'usd') { state.usd += prize.amount; document.getElementById('prize-amount').textContent = `+$${prize.amount}`; }
-    popup.style.display = 'block'; overlay.style.display = 'block';
-    playSound(800, 'sine', 0.5);
-    update(); saveWithDelay();
-}
-
-function closePrizePopup() {
-    document.getElementById('prize-popup').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-    const ad = document.getElementById('ad-spin-btn');
-    if (ad) { ad.disabled = false; ad.textContent = '📺 СПИН ЗА РЕКЛАМУ'; }
-    updateWheelTimer();
-}
-
-// ============= СОБЫТИЯ (Блок 7 - Индекс 6) =============
-function canTriggerEvents() {
-    return Math.min(Math.floor((state.total_earned||0) / 100000), 5) >= 2 && !activeEvent;
-}
-
-function triggerRandomEvent() {
-    if (!canTriggerEvents() || Math.random() > 0.015) return;
-    const events = [
-        { type: 'sheikh', title_ru: '👳 ШЕЙХ ПРЕДЛАГАЕТ', msg_ru: 'Продать 10 баррелей нефти за $100?', can: () => state.o >= 10, act: () => { if(state.o>=10){state.o-=10;state.usd+=100;showGameNotification('+$100 от Шейха!','success');saveWithDelay();} }, single: true },
-        { type: 'leak', title_ru: '🛢️ УТЕЧКА ТРУБОПРОВОДА', msg_ru: 'Авария! Потеряно 10% запасов нефти', can: () => state.o >= 200, act: () => { let lost=Math.floor(state.o*0.1); state.o-=lost; showGameNotification(`-${lost.toLocaleString()} нефти`,'error'); saveWithDelay(); } },
-        { type: 'explosion', title_ru: '💥 ПОЖАР НА ВЫШКЕ', msg_ru: 'Экологический штраф: $300', can: () => state.usd >= 300, act: () => { state.usd-=300; showGameNotification('-$300 штраф','error'); saveWithDelay(); } },
-        { type: 'bonus', title_ru: '🎁 ГОСЗАКАЗ', msg_ru: 'Премия компании +25 000 ₽', can: () => true, act: () => { state.m+=25000; state.total_earned+=25000; showGameNotification('+25 000 ₽','success'); saveWithDelay(); }, single: true }
-    ];
-    const available = events.filter(e => e.can());
-    if (!available.length) return;
-    const evt = available[Math.floor(Math.random() * available.length)];
-    activeEvent = evt;
-    const popup = document.createElement('div');
-    popup.className = 'prize-popup event-modal';
-    popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card);border:3px solid var(--gold);border-radius:16px;padding:20px;z-index:3000;text-align:center;max-width:90%;min-width:250px;color:white;';
-    popup.innerHTML = `
-        <div style="font-size:40px;margin-bottom:8px;">${evt.type === 'sheikh' ? '👳' : evt.type === 'leak' ? '🛢️' : evt.type === 'explosion' ? '💥' : '🎁'}</div>
-        <div style="font-size:18px;font-weight:bold;color:var(--gold);margin-bottom:6px;">${evt.title_ru}</div>
-        <div style="font-size:14px;margin-bottom:12px;">${evt.msg_ru}</div>
-        <button class="btn-main" onclick="acceptEvent()" style="width:100%;">ПРИНЯТЬ</button>
-        ${!evt.single ? `<button class="btn-main" onclick="watchAdForDecline()" style="width:100%;margin-top:8px;background:linear-gradient(45deg,#8e44ad,#9b59b6);color:#fff;">🎬 ИЗБЕЖАТЬ ЗА РЕКЛАМУ</button>` : ''}
-    `;
-    document.body.appendChild(popup);
-    playSound(500, 'sawtooth', 0.3);
-}
-
-function acceptEvent() {
-    if (activeEvent) { activeEvent.act(); closeEventPopup(); update(); }
-}
-
-function watchAdForDecline() {
-    requestRewardedAd(6, () => {
-        state.ads_watched = (state.ads_watched || 0) + 1;
-        showGameNotification('🛡️ Авария устранена бесплатно!', 'success');
-        closeEventPopup();
-        update();
-    });
-}
-
-function closeEventPopup() {
-    document.querySelectorAll('.event-modal').forEach(el => el.remove());
-    activeEvent = null;
-}
-
-// ============= ИНИЦИАЛИЗАЦИЯ И НАВИГАЦИЯ =============
-function hideLoadingScreen() {
-    const el = document.getElementById('loading-overlay');
-    if (el) { el.classList.add('hidden'); setTimeout(() => { el.style.display = 'none'; }, 500); }
-}
-
-function initGame() {
-    loadGame();
-    updatePlayerIdDisplay();
-    renderWheel();
-    renderUranItems();
-    update();
-    updateMarkets();
-    refreshLeaderboard();
-    checkAndShowWhatsNew();
-    hideLoadingScreen();
-}
-
-function nav(id, el) {
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.n-item').forEach(n=>n.classList.remove('active'));
-    const target = document.getElementById('p-'+id);
-    if (target) target.classList.add('active');
-    if (el) el.classList.add('active');
-    playSound(400, 'sine', 0.08);
-    if (id === 'fortune') { renderWheel(); updateWheelTimer(); }
-    if (id === 'uran') { renderUranItems(); updateUranDisplay(); }
-    if (id === 'profile') refreshLeaderboard();
-    if (id === 'market') { setTimeout(() => { drawChart('o-chart', hOil, '#ffcc00'); drawChart('b-chart', hBtc, '#00ff88'); }, 50); }
-    
-    // Межстраничная реклама РСЯ (Блоки 9-12) при переходе между вкладками раз в 75 сек
-    const now = Date.now();
-    if (currentPage !== id && now - lastPageChange > 75000) {
-        lastPageChange = now;
-        if (window.Android && window.Android.showInterstitial) {
-            window.Android.showInterstitial();
-        }
-    }
-    currentPage = id;
-}
-
-// ============= КЛИКИ =============
-let clickCooldown = false, rapidClicks = 0, cooldownTimer = null;
-
-document.getElementById('rig-btn').addEventListener('click', (e) => {
-    if(isPaused) return;
-    const now = Date.now();
-    if (now - state.last_click_time < 75) return;
-    rapidClicks++;
-    if (!cooldownTimer) cooldownTimer = setTimeout(() => { rapidClicks=0; cooldownTimer=null; }, 1000);
-    if (rapidClicks > 13) { clickCooldown=true; showCooldownWarning(); setTimeout(()=>{clickCooldown=false;},2000); return; }
-    if (clickCooldown) return;
-    state.last_click_time = now;
-    let oil = state.dr;
-    if (state.items.gold_drill > 0) oil += state.items.gold_drill * itemsData[0].bonus;
-    if (state.boost_active) oil *= 2;
-    state.o += Math.floor(oil);
-    createParticle(e.pageX || window.innerWidth/2, e.pageY || window.innerHeight/3, `+${Math.floor(oil)} 🛢️`);
-    playSound(160, 'triangle', 0.08);
-    update(); saveWithDelay();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const uranBtn = document.getElementById('uran-rig-btn');
-    if (uranBtn) {
-        uranBtn.addEventListener('click', (e) => {
-            if (isPaused) return;
-            let u = state.uranium_drill;
-            if (state.uranium_items.auto_extractor > 0) u += state.uranium_items.auto_extractor * 0.5;
-            state.uranium += u;
-            createParticle(e.pageX || window.innerWidth/2, e.pageY || window.innerHeight/3, `+${Math.floor(u)} ☢️`);
-            playSound(320, 'sine', 0.08);
-            updateUranDisplay(); update(); saveWithDelay();
-        });
-    }
-});
-
-function showCooldownWarning() {
-    const ov = document.getElementById('cooldown-overlay');
-    if (ov) { ov.style.display='flex'; ov.textContent='⏳'; setTimeout(()=>{ov.style.display='none';},500); }
-}
-
-function createParticle(x, y, txt) {
-    const p = document.createElement('div');
-    p.className = 'particle'; p.innerText = txt;
-    p.style.left = (x - 20) + 'px'; p.style.top = (y - 40) + 'px';
-    document.body.appendChild(p);
-    setTimeout(() => p.remove(), 800);
-}
-
-// ============= ОБНОВЛЕНИЕ ЭКРАНА =============
-function update() {
-    document.getElementById('m-display').innerText = Math.floor(state.m).toLocaleString() + ' ₽';
-    document.getElementById('o-val').innerText = Math.floor(state.o).toLocaleString();
-    document.getElementById('g-val').innerText = Math.floor(state.g).toLocaleString();
-    document.getElementById('b-val').innerText = state.btc.toFixed(3);
-    document.getElementById('s-val').innerText = Math.floor(state.s).toLocaleString();
-    document.getElementById('bank-val').innerText = Math.floor(state.s).toLocaleString() + ' ₽';
-    document.getElementById('usd-val').innerText = Math.floor(state.usd).toLocaleString();
-    document.getElementById('usd-balance').innerText = '$' + Math.floor(state.usd).toLocaleString();
-    document.getElementById('usd-rate').innerText = usdRate.toFixed(0) + ' ₽';
-    
-    let dc = Math.floor(100 * Math.pow(1.9, state.dr-1));
-    document.getElementById('dr-info').innerText = 'Уровень ' + state.dr;
-    document.getElementById('btn-upg-val').innerText = dc.toLocaleString() + ' ₽';
-    document.getElementById('btn-upg-val').disabled = state.m < dc;
-
-    const ranks = ["НОВИЧОК","РАБОТЯГА","МАСТЕР","ДИРЕКТОР","МАГНАТ","ОЛИГАРХ"];
-    let rIdx = Math.min(Math.floor(state.total_earned / 100000), 5);
-    let nextGoal = (rIdx + 1) * 100000;
-    document.getElementById('rank-name').innerText = ranks[rIdx];
-    document.getElementById('prof-rank').innerText = ranks[rIdx];
-    document.getElementById('exp-f').style.width = Math.min(100, (state.total_earned % 100000) / 1000) + '%';
-    document.getElementById('exp-t').innerText = Math.max(0, Math.floor(nextGoal - state.total_earned)).toLocaleString();
-
-    renderLists(); renderQuests(); renderItems(); renderLux(); renderSpace();
-    updateBoostDisplay(); updateWheelTimer(); updateUranDisplay(); updateBtcAdTimer();
-    
-    const uBtn = document.getElementById('uran-switch-btn');
-    if (uBtn) {
-        if (state.items.uranium_equipment > 0) {
-            uBtn.classList.remove('disabled');
-        } else {
-            uBtn.classList.add('disabled');
-        }
-    }
-}
-
-function renderQuests() {
-    let html = '';
-    quests.forEach(q => {
-        let current = (q.id === 'q1' || q.id === 'q4') ? state.total_earned : (q.id === 'q2' ? state.o : state.biz.ref);
-        let done = state.q_done.includes(q.id);
-        if (!done && current >= q.goal) {
-            state.q_done.push(q.id); state.m += q.prize;
-            showGameNotification(`🏆 Задание выполнено: +${q.prize.toLocaleString()} ₽!`, 'success');
-            playSound(800,'sine',0.5); saveWithDelay();
-        }
-        html += `<div class="quest-card ${done ? 'done' : ''}">
-            <div class="flex"><b>${q.ru}</b> <span>${done ? '✅' : '+' + q.prize.toLocaleString() + ' ₽'}</span></div>
-            <small>${Math.min(Math.floor(current), q.goal).toLocaleString()} / ${q.goal.toLocaleString()}</small>
-        </div>`;
-    });
-    document.getElementById('quest-container').innerHTML = html;
-}
-
-function renderItems() {
-    let html = '';
-    itemsData.forEach(item => {
-        const owned = state.items[item.id] || 0;
-        const canBuy = item.price_currency === 'usd' ? state.usd >= item.price : state.m >= item.price;
-        const currency = item.price_currency === 'usd' ? '$' : '₽';
-        html += `<div class="item-card">
-            <div class="item-icon">${item.icon}</div>
-            <div class="item-name">${item.name_ru}</div>
-            <div class="item-price">${item.price.toLocaleString()} ${currency}</div>
-            <div class="item-owned">${owned} шт.</div>
-            <button class="btn-main" style="margin-top:4px;padding:5px 8px;font-size:10px;width:100%;" 
-                    onclick="buyItem('${item.id}', ${item.price}, '${item.price_currency || 'rub'}')" ${!canBuy ? 'disabled' : ''}>
-                КУПИТЬ
-            </button>
-        </div>`;
-    });
-    document.getElementById('items-container').innerHTML = html;
-}
-
-function buyItem(id, price, currency) {
-    if (currency === 'usd') {
-        if (state.usd >= price) {
-            state.usd -= price;
-            state.items[id] = (state.items[id] || 0) + 1;
-            playSound(600,'sine',0.2);
-            if (id === 'uranium_equipment') {
-                showGameNotification('☢️ Урановый рудник открыт! (Кнопка вверху)', 'success');
+        function upUranDrill() {
+            let cost = state.ud_lvl * 1000;
+            if (state.usd >= cost) {
+                state.usd -= cost;
+                state.ud_lvl++;
+                playSound('buy');
+                updateUI();
             }
-            update(); saveWithDelay();
         }
-    } else {
-        if (state.m >= price) {
-            state.m -= price;
-            state.items[id] = (state.items[id] || 0) + 1;
-            playSound(600,'sine',0.2);
-            update(); saveWithDelay();
+
+        function sellUran() {
+            if (state.uranium > 0) {
+                state.usd += state.uranium * 500;
+                state.uranium = 0;
+                playSound('buy');
+                updateUI();
+            }
         }
-    }
-}
 
-function renderLists() {
-    const data = [
-        {id:'ref', n:'НПЗ (Переработка нефти в бензин)', p:15000, i:'🏭'},
-        {id:'gas', n:'Сеть АЗС (Продажа бензина)', p:60000, i:'⛽'},
-        {id:'plt', n:'Морская Вышка (+15 нефти/сек)', p:300000, i:'⚓'},
-        {id:'tnk', n:'Нефтяной Танкер (+100 нефти/сек)', p:2000000, i:'🚢'},
-        {id:'space', n:'Космодром (Добыча на орбите)', p:500000000, i:'🚀'}
-    ];
-    let h = '';
-    data.forEach(b => {
-        const cnt = state.biz[b.id]||0;
-        let cost = Math.floor(b.p * Math.pow(1.65, cnt));
-        h += `<div class="ui-card flex" style="padding:10px;"><div>${b.i} <b>${b.n}</b> (${cnt})</div><button class="btn-main" style="font-size:10px;padding:6px 10px;" onclick="buyBiz('${b.id}',${cost})" ${state.m < cost ? 'disabled' : ''}>${cost.toLocaleString()} ₽</button></div>`;
-    });
-    document.getElementById('biz-container').innerHTML = h;
-}
-
-function renderSpace() {
-    let html = '';
-    if (state.biz.space > 0) {
-        const cost = 500000;
-        const canBuy = state.usd >= cost;
-        const canLaunch = Date.now() - (state.last_mission_time||0) > 15000 && (state.rockets||0) > 0;
-        html = `<div class="ui-card" style="padding:10px; border-color: var(--gold);">
-            <div class="flex">
-                <div><b>🚀 Космические миссии</b></div>
-                <div>Ракеты: <b style="color:var(--gold);">${state.rockets||0}</b></div>
-            </div>
-            <div style="margin-top:6px;">
-                <button class="mission-btn" onclick="buyRocket(${cost})" ${!canBuy ? 'disabled' : ''}>КУПИТЬ РАКЕТУ ($500K)</button>
-                <button class="mission-btn" style="background:linear-gradient(45deg,#00cc00,#00ff88);color:#000;margin-top:6px;" onclick="launchMission()" ${!canLaunch ? 'disabled' : ''}>ЗАПУСТИТЬ МИССИЮ</button>
-                ${(state.space_oil||0) > 0 ? `<div style="margin-top:8px;padding-top:6px;border-top:1px solid #333;"><div class="flex"><div>🛢️ Космо-нефть:</div><div style="color:var(--gold);font-weight:bold;">${(state.space_oil||0).toLocaleString()}</div></div><button class="mission-btn" style="background:var(--gold);color:#000;margin-top:4px;" onclick="sellSpaceOil()">ПРОДАТЬ (500 ₽/ед)</button></div>` : ''}
-            </div>
-        </div>`;
-    }
-    document.getElementById('space-container').innerHTML = html;
-}
-
-function buyRocket(cost) {
-    if (state.usd >= cost) { state.usd -= cost; state.rockets = (state.rockets||0)+1; playSound(700,'sine',0.3); renderSpace(); update(); showGameNotification('✅ Ракета куплена!','success'); saveWithDelay(); }
-}
-
-function launchMission() {
-    if ((state.rockets||0) > 0 && state.biz.space > 0) {
-        state.last_mission_time = Date.now();
-        state.rockets = (state.rockets||0) - 1;
-        if (Math.random() < 0.8) {
-            const oil = Math.floor(200 + Math.random() * 500);
-            state.space_oil = (state.space_oil||0) + oil;
-            playSound(800,'sine',0.5);
-            showGameNotification(`🚀 Найдено ${oil} космо-нефти!`,'success');
-        } else {
-            playSound(300,'sine',0.3);
-            showGameNotification('❌ Ракета сбилась с курса!','error');
+        // БЛОК №8 (R-M-20330347-8): +50 УРАНА ЗА РЕКЛАМУ
+        function showAdForUranium() {
+            requestRewardedAd(7, () => {
+                state.uranium += 50;
+                playSound('win');
+                updateUI();
+                showGameNotification('☢️ Получено +50 урана!');
+            });
         }
-        renderSpace(); update(); saveWithDelay();
-    }
-}
 
-function sellSpaceOil() {
-    const oil = state.space_oil||0;
-    if (oil > 0) {
-        const total = oil * 500;
-        state.m += total; state.total_earned += total; state.space_oil = 0;
-        playSound(600,'sine',0.3);
-        renderSpace(); update();
-        showGameNotification(`✅ Продано за ${total.toLocaleString()} ₽`,'success');
-        saveWithDelay();
-    }
-}
-
-function renderLux() {
-    const data = [
-        {id:'c', n:'Mercedes-Maybach S-Class', p:800000, i:'🚗'},
-        {id:'h', n:'Золотой Особняк на Рублевке', p:20000000, i:'🏰'},
-        {id:'i', n:'Резиденция с вертолетом', p:500000000, i:'🚁'},
-        {id:'r', n:'Частная Яхта Залива', p:1000000000, i:'🛥️'},
-        {id:'island', n:'Частный Нефтяной Остров', p:5000000000, i:'🏝️'}
-    ];
-    let h = '';
-    data.forEach(l => {
-        let own = state.lux.includes(l.id);
-        h += `<div class="ui-card flex" style="padding:10px;"><div>${l.i} <b>${l.n}</b></div><button class="btn-main" style="font-size:10px;padding:6px 10px;" onclick="buyLux('${l.id}',${l.p})" ${own || state.m < l.p ? 'disabled' : ''}>${own ? '✅ КУПЛЕНО' : l.p.toLocaleString()+' ₽'}</button></div>`;
-    });
-    document.getElementById('lux-container').innerHTML = h;
-}
-
-function buyUpgrade(type) {
-    let cost = Math.floor(100 * Math.pow(1.9, state.dr-1));
-    if(state.m >= cost) { state.m -= cost; state.dr++; playSound(600,'sine',0.2); update(); saveWithDelay(); }
-}
-
-function buyBiz(id, c) {
-    if(state.m >= c) { state.m -= c; state.biz[id] = (state.biz[id]||0) + 1; playSound(500,'square',0.2); update(); saveWithDelay(); }
-}
-
-function buyLux(id, c) {
-    if(state.m >= c && !state.lux.includes(id)) { state.m -= c; state.lux.push(id); playSound(800,'sine',0.5); update(); saveWithDelay(); }
-}
-
-function bankAction(type) {
-    if(type === 'in') {
-        let a = Math.floor(state.m * 0.25);
-        if (a <= 0) { showGameNotification('Недостаточно рублей!', 'error'); return; }
-        state.m -= a; state.s += a;
-        showGameNotification(`🏦 Внесено ${a.toLocaleString()} ₽`, 'success');
-    } else {
-        if (state.s <= 0) return;
-        state.m += state.s; state.s = 0;
-        showGameNotification('🏦 Вклад снят на баланс!', 'success');
-    }
-    playSound(400,'square',0.2); update(); saveWithDelay();
-}
-
-function exchangeCurrency(type) {
-    if (type === 'buy') {
-        const amount = Math.floor(state.s * 0.25);
-        const usd = Math.floor(amount / usdRate);
-        if (state.s >= amount && usd > 0) {
-            state.s -= amount; state.usd += usd;
-            playSound(500,'sine',0.2);
-            showGameNotification(`💵 Куплено $${usd.toLocaleString()}`, 'success');
-            update(); saveWithDelay();
-        } else showGameNotification('Внесите рубли в банк для обмена!','error');
-    } else if (type === 'sell') {
-        if (state.usd > 0) {
-            const rub = Math.floor(state.usd * usdRate);
-            state.m += rub; state.usd = 0;
-            playSound(600,'sine',0.2);
-            showGameNotification(`💵 Продано за ${rub.toLocaleString()} ₽`, 'success');
-            update(); saveWithDelay();
+        function buyItem(cat, key) {
+            let item = state[cat][key];
+            if (cat === 'lux') {
+                if (state.m >= item.cost && !item.bought) {
+                    state.m -= item.cost;
+                    item.bought = true;
+                    playSound('win');
+                }
+            } else if (cat === 'items') {
+                const cur = item.cur || 'm';
+                if (item.special && item.count >= 1) return;
+                if (state[cur] >= item.cost) {
+                    state[cur] -= item.cost;
+                    item.count++;
+                    if (!item.special) item.cost = Math.floor(item.cost * 1.6);
+                    playSound('buy');
+                    if (key === 'uranium_equipment') {
+                        showGameNotification('🎉 Урановая шахта разблокирована! Перейдите во вкладку УРАН.');
+                    }
+                }
+            } else if (cat === 'uran_items') {
+                if (state.usd >= item.cost) {
+                    state.usd -= item.cost;
+                    item.count++;
+                    item.cost = Math.floor(item.cost * 1.7);
+                    playSound('buy');
+                }
+            } else if (cat === 'space') {
+                if (state.uranium >= item.cost) {
+                    state.uranium -= item.cost;
+                    item.count++;
+                    if (key === 'rocket_build') {
+                        state.rockets++;
+                    }
+                    item.cost = Math.floor(item.cost * 1.5);
+                    playSound('buy');
+                }
+            } else {
+                if (state.m >= item.cost) {
+                    state.m -= item.cost;
+                    item.count++;
+                    item.cost = Math.floor(item.cost * 1.6);
+                    playSound('buy');
+                }
+            }
+            renderAll();
+            updateUI();
         }
-    }
-}
 
-function activatePromoCode() {
-    const input = document.getElementById('promo-code');
-    const code = input.value.trim().toUpperCase();
-    if (!code) { showGameNotification('Введите промокод!','error'); return; }
-    if (state.used_promos.includes(code)) { showGameNotification('Промокод уже использован!','error'); return; }
-    if (promo_codes[code]) {
-        const p = promo_codes[code];
-        state.used_promos.push(code);
-        state.m += p.rub; state.usd += p.usd; state.o += p.oil; state.total_earned += p.rub;
-        input.value = '';
-        showGameNotification(`🎉 +${p.rub.toLocaleString()} ₽, +$${p.usd}, +${p.oil} нефти!`,'success');
-        playSound(800,'sine',0.5); update(); saveWithDelay();
-    } else {
-        showGameNotification('Неверный промокод!','error');
-    }
-}
+        function launchSpaceMission(planet) {
+            if (state.space.spaceport.count < 1) {
+                showGameNotification('❌ Сначала постройте Космодром!', 'var(--red)');
+                return;
+            }
+            if (state.rockets < 1) {
+                showGameNotification('❌ Нет доступных ракет!', 'var(--red)');
+                return;
+            }
 
-function updateBoostDisplay() {
-    const badge = document.getElementById('boost-badge');
-    const timer = document.getElementById('boost-timer');
-    const btn = document.getElementById('double-click-btn');
-    if (!badge || !timer || !btn) return;
-    const left = state.boost_end - Date.now();
-    if (state.boost_active && left > 0) {
-        badge.style.display = 'block';
-        timer.textContent = `Активно еще ${Math.ceil(left/1000)} сек`;
-        btn.innerHTML = `🔥 2X АКТИВНО (${Math.ceil(left/1000)}с)`;
-        btn.disabled = true;
-    } else {
-        state.boost_active = false;
-        badge.style.display = 'none';
-        timer.textContent = '';
-        btn.innerHTML = `🎬 2X КЛИК НА 30 СЕК`;
-        btn.disabled = false;
-    }
-}
+            state.rockets--;
+            playSound('win');
 
-function tick() {
-    if(isPaused) return;
-    state.o += (state.biz.plt||0) * 15 + (state.biz.tnk||0) * 100;
-    if(state.o > 0 && (state.biz.ref||0) > 0) {
-        let a = Math.min(state.o, (state.biz.ref||0) * 8);
-        state.o -= a; state.g += a;
-    }
-    if(state.g > 0 && (state.biz.gas||0) > 0) {
-        let a = Math.min(state.g, (state.biz.gas||0) * 4);
-        let gain = a * 30; state.m += gain; state.total_earned += gain; state.g -= a;
-    }
-    // Авто-добыча урана
-    if (state.items.uranium_equipment > 0 && (state.uranium_items.auto_extractor || 0) > 0) {
-        state.uranium += state.uranium_items.auto_extractor * 1;
-    }
-    triggerRandomEvent();
-    update(); saveWithDelay();
-}
+            if (planet === 'moon') {
+                const reward = 50;
+                state.space_oil += reward;
+                state.usd += reward * 100;
+                showGameNotification(`🌙 Миссия на Луну успешна! Получено ${reward} космо-нефти (+${reward * 100} $)!`);
+            } else if (planet === 'mars') {
+                const reward = 150;
+                state.space_oil += reward;
+                state.usd += reward * 100;
+                showGameNotification(`🔴 Миссия на Марс успешна! Получено ${reward} космо-нефти (+${reward * 100} $)!`);
+            }
+            updateUI();
+        }
 
-function drawChart(id, data, color) {
-    const c = document.getElementById(id); if(!c) return;
-    const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath();
-    let max = Math.max(...data), min = Math.min(...data);
-    data.forEach((v, i) => {
-        let x = (c.width / (data.length-1)) * i;
-        let y = c.height - 10 - ((v - min) / (max - min || 1) * (c.height - 20));
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-}
+        // БАНК
+        function bDep() {
+            let d = Math.floor(state.m * 0.25);
+            state.m -= d;
+            state.s += d;
+            playSound('buy');
+            updateUI();
+        }
+        function bWith() {
+            state.m += state.s;
+            state.s = 0;
+            playSound('buy');
+            updateUI();
+        }
 
-function updateMarkets() {
-    pOil += (Math.random() - 0.48) * 2; pOil = Math.max(8, Math.min(60, pOil));
-    if (state.items.stock_tips > 0) pOil = Math.floor(pOil * (1 + itemsData[3].bonus * state.items.stock_tips));
-    hOil.push(pOil); if(hOil.length > 20) hOil.shift();
-    pBtc += (Math.random() - 0.48) * 3000; pBtc = Math.max(15000, Math.min(120000, pBtc));
-    if (state.items.stock_tips > 0) pBtc = Math.floor(pBtc * (1 + itemsData[3].bonus * state.items.stock_tips));
-    hBtc.push(pBtc); if(hBtc.length > 20) hBtc.shift();
-    usdRate += (Math.random() - 0.5) * 3; usdRate = Math.max(55, Math.min(105, usdRate));
-    const op = document.getElementById('o-price'); if (op) op.innerText = Math.floor(pOil) + ' ₽';
-    const bp = document.getElementById('b-price'); if (bp) bp.innerText = Math.floor(pBtc).toLocaleString() + ' ₽';
-    const ur = document.getElementById('usd-rate'); if (ur) ur.innerText = usdRate.toFixed(0) + ' ₽';
-    drawChart('o-chart', hOil, '#ffcc00');
-    drawChart('b-chart', hBtc, '#00ff88');
-}
+        // =========================================================================
+        // КОЛЕСО ФОРТУНЫ (ТОЧНОЕ СОВПАДЕНИЕ СТРЕЛКИ И ВЫПАВШЕГО ПРИЗА)
+        // Сектора по часовой стрелке от 12 часов (0°):
+        // Индекс 0: 0°..60°   (центр 30°)  -> 50 $   (или 250 $ в X5)
+        // Индекс 1: 60°..120° (центр 90°)  -> 1000 ₽ (или 5000 ₽ в X5)
+        // Индекс 2: 120°..180°(центр 150°) -> 50 🛢️  (или 250 🛢️ в X5)
+        // Индекс 3: 180°..240°(центр 210°) -> 0.01 ₿ (или 0.05 ₿ в X5)
+        // Индекс 4: 240°..300°(центр 270°) -> 5000 ₽ (или 25000 ₽ в X5)
+        // Индекс 5: 300°..360°(центр 330°) -> 100 $  (или 500 $ в X5)
+        // =========================================================================
+        let isSpinning = false;
+        let currentRotation = 0;
+        let currentRotationX5 = 0;
 
-// ============= ТАЙМЕРЫ =============
-setInterval(() => {
-    if (state.boost_active && Date.now() > state.boost_end) {
-        state.boost_active = false; updateBoostDisplay(); update();
-    }
-    updateWheelTimer(); updateBtcAdTimer();
-}, 1000);
+        const wheelPrizes = [
+            { name: '50 $', action: () => { state.usd += 50; } },
+            { name: '1,000 ₽', action: () => { state.m += 1000; } },
+            { name: '50 🛢️', action: () => { state.o += 50; } },
+            { name: '0.01 ₿', action: () => { state.btc += 0.01; } },
+            { name: '5,000 ₽', action: () => { state.m += 5000; } },
+            { name: '100 $', action: () => { state.usd += 100; } }
+        ];
 
-setInterval(updateMarkets, 4000);
-setInterval(tick, 1000);
-setInterval(() => { if(!isPaused && state.s > 0) { state.s = Math.floor(state.s * 1.01); update(); saveWithDelay(); } }, 30000);
-setInterval(() => { document.getElementById('time-display').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }, 1000);
-setInterval(refreshLeaderboard, 12000);
+        const wheelPrizesX5 = [
+            { name: '250 $', action: () => { state.usd += 250; } },
+            { name: '5,000 ₽', action: () => { state.m += 5000; } },
+            { name: '250 🛢️', action: () => { state.o += 250; } },
+            { name: '0.05 ₿', action: () => { state.btc += 0.05; } },
+            { name: '25,000 ₽', action: () => { state.m += 25000; } },
+            { name: '500 $', action: () => { state.usd += 500; } }
+        ];
 
-window.onload = initGame;
-</script>
+        function spinWheel(type) {
+            if (isSpinning) return;
+
+            if (type === 'paid') {
+                if (state.usd < 100) {
+                    showGameNotification('❌ Недостаточно долларов! Нужно 100 $', 'var(--red)');
+                    return;
+                }
+                state.usd -= 100;
+                updateUI();
+                executeWheelSpin();
+            } else if (type === 'ad') {
+                // БЛОК №6 (R-M-20330347-6): ВРАЩЕНИЕ КОЛЕСА ЗА РЕКЛАМУ
+                requestRewardedAd(5, () => {
+                    state.ads_watched++;
+                    if (state.ads_watched >= 10 && !state.x5_unlocked) {
+                        state.x5_unlocked = true;
+                        showGameNotification('🔥 РАЗБЛОКИРОВАНО КОЛЕСО ФОРТУНЫ X5 VIP!');
+                    }
+                    updateUI();
+                    executeWheelSpin();
+                });
+            }
+        }
+
+        function executeWheelSpin() {
+            isSpinning = true;
+            document.getElementById('spin-paid-btn').disabled = true;
+            document.getElementById('spin-ad-btn').disabled = true;
+
+            const prizeIndex = Math.floor(Math.random() * wheelPrizes.length);
+            const wheel = document.getElementById('fortune-wheel');
+
+            // Центр выбранного сектора (30, 90, 150, 210, 270, 330 градусов)
+            const sectorCenter = prizeIndex * 60 + 30;
+            // Небольшое отклонение внутри сектора (-14°..+14°), чтобы не выходить за границы 60° сектора
+            const jitter = Math.floor(Math.random() * 29) - 14;
+            // Угол поворота по часовой стрелке, при котором сектор встает ровно под верхнюю стрелку (0°)
+            const desiredMod = (360 - sectorCenter + jitter + 360) % 360;
+            const currentMod = ((currentRotation % 360) + 360) % 360;
+            const deltaToDesired = (desiredMod - currentMod + 360) % 360;
+
+            const targetRotation = currentRotation + (360 * 5) + deltaToDesired;
+            currentRotation = targetRotation;
+
+            wheel.style.transform = `rotate(${targetRotation}deg)`;
+            playSound('click');
+
+            setTimeout(() => {
+                const prize = wheelPrizes[prizeIndex];
+                prize.action();
+                playSound('win');
+                showGameNotification(`🎉 Вы выиграли: ${prize.name}!`);
+                updateUI();
+                saveGame();
+                isSpinning = false;
+                document.getElementById('spin-paid-btn').disabled = false;
+                document.getElementById('spin-ad-btn').disabled = false;
+            }, 4000);
+        }
+
+        function spinWheelX5(type) {
+            if (isSpinning || !state.x5_unlocked) return;
+
+            if (type === 'paid') {
+                if (state.usd < 500) {
+                    showGameNotification('❌ Недостаточно долларов! Нужно 500 $', 'var(--red)');
+                    return;
+                }
+                state.usd -= 500;
+                updateUI();
+                executeWheelSpinX5();
+            } else if (type === 'free') {
+                state.ads_watched = 0;
+                state.x5_unlocked = false;
+                updateUI();
+                executeWheelSpinX5();
+            }
+        }
+
+        function executeWheelSpinX5() {
+            isSpinning = true;
+            document.getElementById('spin-x5-paid-btn').disabled = true;
+            document.getElementById('spin-x5-free-btn').disabled = true;
+
+            const prizeIndex = Math.floor(Math.random() * wheelPrizesX5.length);
+            const wheel = document.getElementById('fortune-wheel-x5');
+
+            const sectorCenter = prizeIndex * 60 + 30;
+            const jitter = Math.floor(Math.random() * 29) - 14;
+            const desiredMod = (360 - sectorCenter + jitter + 360) % 360;
+            const currentMod = ((currentRotationX5 % 360) + 360) % 360;
+            const deltaToDesired = (desiredMod - currentMod + 360) % 360;
+
+            const targetRotation = currentRotationX5 + (360 * 5) + deltaToDesired;
+            currentRotationX5 = targetRotation;
+
+            wheel.style.transform = `rotate(${targetRotation}deg)`;
+            playSound('click');
+
+            setTimeout(() => {
+                const prize = wheelPrizesX5[prizeIndex];
+                prize.action();
+                playSound('win');
+                showGameNotification(`🔥 Вы выиграли X5 приз: ${prize.name}!`);
+                updateUI();
+                saveGame();
+                isSpinning = false;
+                updateUI();
+            }, 4000);
+        }
+
+        // ОТРИСОВКА ИНТЕРФЕЙСА
+        function renderAll() {
+            const mBox = document.getElementById('shop-mining');
+            mBox.innerHTML = '';
+            for (let k in state.items) {
+                let it = state.items[k];
+                const curSymbol = it.cur === 'usd' ? '$' : '₽';
+                const isBought = it.special && it.count >= 1;
+                mBox.innerHTML += `<div class="card"><div class="item-row">
+                    <div class="item-info"><h4>${it.name} (${it.count})</h4><p>${it.special ? 'Открывает вкладку Уран' : '+' + it.p + ' 🛢️/сек'}</p></div>
+                    <button class="btn" onclick="buyItem('items','${k}')" id="btn-i-${k}" ${isBought ? 'disabled' : ''}>${isBought ? 'КУПЛЕНО' : it.cost.toLocaleString() + ' ' + curSymbol}</button>
+                </div></div>`;
+            }
+
+            const uBox = document.getElementById('shop-uran');
+            uBox.innerHTML = '';
+            for (let k in state.uran_items) {
+                let it = state.uran_items[k];
+                let desc = '';
+                if (it.u_bonus) desc = `+${it.u_bonus} ☢️ к клику`;
+                else if (it.income) desc = `+${it.income} $/сек`;
+                else if (it.u_auto) desc = `+${it.u_auto} ☢️/сек автоматически`;
+
+                uBox.innerHTML += `<div class="card"><div class="item-row">
+                    <div class="item-info"><h4>${it.name} (${it.count})</h4><p>${desc}</p></div>
+                    <button class="btn" onclick="buyItem('uran_items','${k}')" id="btn-u-${k}" style="background: var(--uran); color: #000;">${it.cost.toLocaleString()} $</button>
+                </div></div>`;
+            }
+
+            const bBox = document.getElementById('shop-biz');
+            bBox.innerHTML = '';
+            for (let k in state.biz) {
+                let it = state.biz[k];
+                bBox.innerHTML += `<div class="card"><div class="item-row">
+                    <div class="item-info"><h4>${it.name} (${it.count})</h4><p>-${it.o_use}🛢️ -> +${it.m_gen}₽, +${it.g_gen}🔥</p></div>
+                    <button class="btn" onclick="buyItem('biz','${k}')" id="btn-b-${k}">${it.cost.toLocaleString()} ₽</button>
+                </div></div>`;
+            }
+
+            const sBox = document.getElementById('shop-space');
+            sBox.innerHTML = '';
+            for (let k in state.space) {
+                let it = state.space[k];
+                sBox.innerHTML += `<div class="card"><div class="item-row">
+                    <div class="item-info"><h4>${it.name} (${it.count})</h4><p>Стоимость в уране</p></div>
+                    <button class="btn" onclick="buyItem('space','${k}')" id="btn-s-${k}" style="background: var(--space); color: white;">${it.cost} ☢️</button>
+                </div></div>`;
+            }
+            sBox.innerHTML += `
+                <div class="card" style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--space);">
+                    <h4 style="margin-bottom: 10px; color: var(--space);">🌌 Космические миссии</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn" onclick="launchSpaceMission('moon')" style="background: var(--cyan); color: white;">🌙 ЛУНА (+50 🌌)</button>
+                        <button class="btn" onclick="launchSpaceMission('mars')" style="background: var(--red); color: white;">🔴 МАРС (+150 🌌)</button>
+                    </div>
+                </div>
+            `;
+
+            const lBox = document.getElementById('shop-lux');
+            lBox.innerHTML = '';
+            for (let k in state.lux) {
+                let it = state.lux[k];
+                lBox.innerHTML += `<div class="card"><div class="item-row">
+                    <div class="item-info"><h4>${it.icon} ${it.name}</h4><p>${it.bought ? 'Куплено' : 'Престиж магната'}</p></div>
+                    <button class="btn" onclick="buyItem('lux','${k}')" id="btn-l-${k}" ${it.bought ? 'disabled' : ''}>${it.bought ? 'В ГАРАЖЕ' : it.cost.toLocaleString() + ' ₽'}</button>
+                </div></div>`;
+            }
+
+            renderQuests();
+            renderLeaderboard();
+        }
+
+        function renderQuests() {
+            const qBox = document.getElementById('quests-list');
+            qBox.innerHTML = '';
+            quests.forEach(q => {
+                const done = state.quests_completed.includes(q.id);
+                qBox.innerHTML += `
+                    <div class="quest-card" style="opacity: ${done ? 0.5 : 1};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="font-size: 13px;">${done ? '✅' : '⏳'} ${q.name}</h4>
+                                <p style="font-size: 11px; color: var(--gray);">${q.desc}</p>
+                            </div>
+                            <span style="font-weight: bold; color: var(--green); font-size: 12px;">+${q.reward_usd} $</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderLeaderboard() {
+            const lBox = document.getElementById('leaderboard-list');
+            if (!lBox) return;
+
+            const allPlayers = getGlobalLeaderboard();
+            const playerId = localStorage.getItem('oil_magnat_player_id');
+
+            const totalWealth = Math.floor(
+                state.m +
+                (state.usd * state.usd_p) +
+                (state.btc * state.btc_p) +
+                state.s +
+                (state.o * state.o_p) +
+                (state.uranium * 500 * state.usd_p)
+            );
+
+            const currentPlayerInList = allPlayers.find(p => p.id === playerId);
+            if (!currentPlayerInList) {
+                allPlayers.push({
+                    id: playerId,
+                    name: state.nickname || "Игрок",
+                    money: totalWealth,
+                    rank: ranks[state.rank].name,
+                    isPlayer: true
+                });
+            } else {
+                currentPlayerInList.money = totalWealth;
+                currentPlayerInList.name = state.nickname || "Игрок";
+                currentPlayerInList.rank = ranks[state.rank].name;
+                currentPlayerInList.isPlayer = true;
+            }
+
+            allPlayers.sort((a, b) => b.money - a.money);
+            const top10 = allPlayers.slice(0, 10);
+
+            lBox.innerHTML = '';
+            top10.forEach((p, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+                const isCurrentPlayer = p.isPlayer || p.id === playerId;
+                const bgStyle = isCurrentPlayer ? 'background: rgba(245, 158, 11, 0.15); border: 1px solid var(--gold);' : '';
+                const playerIcon = p.isBot ? '' : '👤 ';
+                lBox.innerHTML += `
+                    <div class="card" style="${bgStyle} margin-bottom: 6px; padding: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-weight: bold; font-size: 13px;">${medal} ${playerIcon}${p.name}</span>
+                                <small style="display: block; font-size: 10px; color: var(--gray);">${p.rank}</small>
+                            </div>
+                            <span style="font-weight: bold; color: var(--gold-light); font-size: 12px;">${p.money.toLocaleString()} ₽</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function saveNickname() {
+            const input = document.getElementById('player-nickname');
+            if (input && input.value.trim() !== '') {
+                state.nickname = input.value.trim();
+                saveGame();
+                renderLeaderboard();
+                playSound('buy');
+                showGameNotification(`✅ Никнейм сохранён: ${state.nickname}`);
+            }
+        }
+
+        const promoCodes = {
+            'OILMAGNAT2024': { usd: 500, m: 50000, o: 1000, desc: '500 $, 50,000 ₽ и 1,000 нефти' },
+            'BLACKGOLD100': { btc: 0.5, usd: 1000, desc: '0.5 BTC и 1,000 $' },
+            'SPACEOIL50': { uranium: 50, rockets: 2, desc: '50 урана и 2 ракеты' },
+            'START1000': { m: 100000, o: 5000, desc: '100,000 ₽ и 5,000 нефти' },
+            'CRYPTOBOSS': { btc: 1, usd: 2000, desc: '1 BTC и 2,000 $' }
+        };
+
+        function activatePromoCode() {
+            const input = document.getElementById('promo-input');
+            if (!input) return;
+
+            const code = input.value.trim().toUpperCase();
+            if (!code) return;
+
+            if (!state.used_promos) state.used_promos = [];
+
+            if (state.used_promos.includes(code)) {
+                showGameNotification('❌ Этот промокод уже был активирован!', 'var(--red)');
+                return;
+            }
+
+            if (promoCodes[code]) {
+                const reward = promoCodes[code];
+                if (reward.m) state.m += reward.m;
+                if (reward.usd) state.usd += reward.usd;
+                if (reward.o) state.o += reward.o;
+                if (reward.btc) state.btc += reward.btc;
+                if (reward.uranium) state.uranium += reward.uranium;
+                if (reward.rockets) state.rockets += reward.rockets;
+
+                state.used_promos.push(code);
+                input.value = '';
+                playSound('win');
+                updateUI();
+                saveGame();
+                showGameNotification(`🎉 Промокод активирован! Получено: ${reward.desc}!`);
+            } else {
+                showGameNotification('❌ Неверный промокод!', 'var(--red)');
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('m-val').innerText = Math.floor(state.m).toLocaleString();
+            document.getElementById('o-val').innerText = Math.floor(state.o).toLocaleString();
+            document.getElementById('g-val').innerText = Math.floor(state.g).toLocaleString();
+            document.getElementById('b-val').innerText = state.btc.toFixed(3);
+            document.getElementById('s-val').innerText = Math.floor(state.s).toLocaleString();
+            document.getElementById('usd-val').innerText = Math.floor(state.usd).toLocaleString();
+            document.getElementById('u-val').innerText = Math.floor(state.uranium).toLocaleString();
+            document.getElementById('so-val').innerText = Math.floor(state.space_oil).toLocaleString();
+            document.getElementById('r-val').innerText = Math.floor(state.rockets).toLocaleString();
+            document.getElementById('bank-v').innerText = Math.floor(state.s).toLocaleString() + " ₽";
+
+            let clickPow = 1 + (state.d_lvl - 1) * 2;
+            if (state.double_click_active) clickPow *= 2;
+            document.getElementById('c-pow').innerText = clickPow;
+            document.getElementById('d-lvl').innerText = state.d_lvl;
+            document.getElementById('d-btn').innerText = (state.d_lvl * 100).toLocaleString() + " ₽";
+            document.getElementById('d-btn').disabled = state.m < state.d_lvl * 100;
+
+            let uranPow = state.ud_lvl;
+            for (let k in state.uran_items) {
+                if (state.uran_items[k].u_bonus) uranPow += state.uran_items[k].count * state.uran_items[k].u_bonus;
+            }
+            document.getElementById('u-pow').innerText = uranPow;
+            document.getElementById('ud-lvl').innerText = state.ud_lvl;
+            document.getElementById('ud-btn').innerText = (state.ud_lvl * 1000).toLocaleString() + " $";
+            document.getElementById('ud-btn').disabled = state.usd < state.ud_lvl * 1000;
+
+            let auto = 0;
+            for (let k in state.items) {
+                auto += state.items[k].count * state.items[k].p;
+                let b = document.getElementById(`btn-i-${k}`);
+                const cur = state.items[k].cur || 'm';
+                const isBought = state.items[k].special && state.items[k].count >= 1;
+                if (b) b.disabled = isBought || state[cur] < state.items[k].cost;
+            }
+            document.getElementById('a-pow').innerText = auto;
+
+            if (state.items.uranium_equipment.count >= 1) {
+                document.getElementById('uran-locked').style.display = 'none';
+                document.getElementById('uran-unlocked').style.display = 'block';
+            } else {
+                document.getElementById('uran-locked').style.display = 'block';
+                document.getElementById('uran-unlocked').style.display = 'none';
+            }
+
+            for (let k in state.uran_items) {
+                let b = document.getElementById(`btn-u-${k}`);
+                if (b) b.disabled = state.usd < state.uran_items[k].cost;
+            }
+            for (let k in state.biz) {
+                let b = document.getElementById(`btn-b-${k}`);
+                if (b) b.disabled = state.m < state.biz[k].cost;
+            }
+            for (let k in state.space) {
+                let b = document.getElementById(`btn-s-${k}`);
+                if (b) b.disabled = state.uranium < state.space[k].cost;
+            }
+            for (let k in state.lux) {
+                let b = document.getElementById(`btn-l-${k}`);
+                if (b && !state.lux[k].bought) b.disabled = state.m < state.lux[k].cost;
+            }
+
+            document.getElementById('oil-p-txt').innerText = state.o_p + " ₽";
+            document.getElementById('btc-p-txt').innerText = (state.btc_p / 1000000).toFixed(2) + "M ₽";
+            document.getElementById('usd-rate').innerText = state.usd_p;
+
+            document.getElementById('current-rank').innerText = ranks[state.rank].name;
+            document.getElementById('rank-bonus').innerText = ranks[state.rank].bonus;
+            if (state.rank < ranks.length - 1) {
+                const nextReq = ranks[state.rank + 1].req;
+                const progress = Math.min(100, (state.m / nextReq) * 100);
+                document.getElementById('rank-progress').style.width = progress + '%';
+                document.getElementById('rank-next').innerText = nextReq.toLocaleString();
+            } else {
+                document.getElementById('rank-progress').style.width = '100%';
+                document.getElementById('rank-next').innerText = 'МАКС';
+            }
+
+            const adsCountEl = document.getElementById('ads-watched-count');
+            if (adsCountEl) adsCountEl.innerText = state.ads_watched;
+
+            const x5PaidBtn = document.getElementById('spin-x5-paid-btn');
+            const x5FreeBtn = document.getElementById('spin-x5-free-btn');
+            if (x5PaidBtn && x5FreeBtn) {
+                if (state.x5_unlocked) {
+                    x5PaidBtn.disabled = false;
+                    x5PaidBtn.innerText = '💰 КРУТИТЬ (500 $)';
+                    x5FreeBtn.disabled = false;
+                    x5FreeBtn.innerText = '🎁 БЕСПЛАТНО (1 РАЗ)';
+                } else {
+                    x5PaidBtn.disabled = true;
+                    x5PaidBtn.innerText = `🔒 500 $ (${state.ads_watched}/10)`;
+                    x5FreeBtn.disabled = true;
+                    x5FreeBtn.innerText = `🔒 БЕСПЛАТНО (${state.ads_watched}/10)`;
+                }
+            }
+
+            const nickInput = document.getElementById('player-nickname');
+            if (nickInput && document.activeElement !== nickInput) {
+                nickInput.value = state.nickname || "Игрок";
+            }
+
+            updateBtcAdButton();
+        }
+
+        // ГРАФИКИ
+        function setupCharts() {
+            ['oilChart', 'btcChart'].forEach(id => {
+                const c = document.getElementById(id);
+                c.width = c.offsetWidth * 2;
+                c.height = c.offsetHeight * 2;
+            });
+        }
+
+        function drawChart(id, data, color) {
+            const c = document.getElementById(id);
+            if (!c) return;
+            const ctx = c.getContext('2d');
+            const w = c.width, h = c.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const min = Math.min(...data) * 0.95;
+            const max = Math.max(...data) * 1.05;
+            const range = max - min || 1;
+
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            data.forEach((v, i) => {
+                const x = (i / (data.length - 1)) * w;
+                const y = h - ((v - min) / range) * (h - 20) - 10;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        let lastPageChange = Date.now();
+
+        function nav(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            if (id === 'p-market') setTimeout(setupCharts, 50);
+            if (id === 'p-profile') renderLeaderboard();
+
+            // Межстраничная реклама (блоки 9-12) не чаще чем раз в 75 секунд при смене вкладок
+            if (Date.now() - lastPageChange > 75000) {
+                triggerInterstitialAd();
+                lastPageChange = Date.now();
+            }
+        }
+
+        // БЛОК №2 (R-M-20330347-2): +15,000 ₽ ЗА РЕКЛАМУ
+        function showRewardedAd() {
+            requestRewardedAd(1, () => {
+                state.m += 15000;
+                playSound('win');
+                updateUI();
+                saveGame();
+                showGameNotification('🎉 Вы получили +15,000 ₽!');
+            });
+        }
+
+        // БЛОК №3 (R-M-20330347-3): +50 $ ЗА РЕКЛАМУ
+        function showAdForUSD() {
+            requestRewardedAd(2, () => {
+                state.usd += 50;
+                playSound('win');
+                updateUI();
+                saveGame();
+                showGameNotification('💵 Вы получили +50 $!');
+            });
+        }
+
+        // БЛОК №4 (R-M-20330347-4): +1,000 НЕФТИ ЗА РЕКЛАМУ
+        function showAdForOil() {
+            requestRewardedAd(3, () => {
+                state.o += 1000;
+                playSound('win');
+                updateUI();
+                saveGame();
+                showGameNotification('🛢️ Вы получили +1,000 нефти!');
+            });
+        }
+
+        // БЛОК №5 (R-M-20330347-5): +1 BTC ЗА РЕКЛАМУ (РАЗ В 3 МИНУТЫ)
+        const BTC_AD_COOLDOWN = 180000;
+
+        function showAdForBTC() {
+            const now = Date.now();
+            const timeLeft = (state.last_btc_ad + BTC_AD_COOLDOWN) - now;
+
+            if (timeLeft > 0) {
+                const secLeft = Math.ceil(timeLeft / 1000);
+                const min = Math.floor(secLeft / 60);
+                const sec = secLeft % 60;
+                showGameNotification(`⏳ Подождите ещё ${min} мин ${sec} сек!`, 'var(--red)');
+                return;
+            }
+
+            requestRewardedAd(4, () => {
+                state.btc += 1;
+                state.last_btc_ad = Date.now();
+                playSound('win');
+                updateUI();
+                saveGame();
+                showGameNotification('₿ Вы получили +1 BTC!');
+            });
+        }
+
+        function updateBtcAdButton() {
+            const btn = document.getElementById('btc-ad-btn');
+            if (!btn) return;
+
+            const now = Date.now();
+            const timeLeft = (state.last_btc_ad + BTC_AD_COOLDOWN) - now;
+
+            if (timeLeft > 0) {
+                const secLeft = Math.ceil(timeLeft / 1000);
+                const min = Math.floor(secLeft / 60);
+                const sec = secLeft % 60;
+                btn.disabled = true;
+                btn.innerText = `⏳ ДОСТУПНО ЧЕРЕЗ ${min}:${sec < 10 ? '0' : ''}${sec}`;
+            } else {
+                btn.disabled = false;
+                btn.innerText = '🎬 ПОЛУЧИТЬ 1 BTC';
+            }
+        }
+
+        init();
+    </script>
 </body>
 </html>
