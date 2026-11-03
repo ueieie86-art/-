@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Нефтяной Магнат</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { margin: 0; padding: 0; background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 40%, #d2b48c 40%, #c19a6b 100%); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { background: rgba(0,0,0,0.85); color: #fff; padding: 15px; text-align: center; border-bottom: 3px solid #f1c40f; z-index: 10; }
+        .money { font-size: 36px; font-weight: bold; color: #2ecc71; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .stats { font-size: 14px; color: #bdc3c7; margin-top: 5px; }
+        .boost-active { color: #f39c12; font-weight: bold; margin-top: 5px; animation: blink 1s infinite; }
+
+        .game-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        .oil-rig { width: 175px; height: 175px; background: #2c3e50; border-radius: 50%; border: 6px solid #f39c12; display: flex; justify-content: center; align-items: center; font-size: 80px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: transform 0.05s; }
+        .oil-rig:active { transform: scale(0.90); }
+        
+        .floating-text { position: absolute; color: #2ecc71; font-weight: bold; font-size: 26px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; text-shadow: 1px 1px 3px #000; z-index: 20; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-90px); } }
+        @keyframes blink { 50% { opacity: 0.4; } }
+
+        .tabs { display: flex; background: #1a252f; }
+        .tab { flex: 1; padding: 14px; text-align: center; color: #7f8c8d; font-weight: bold; cursor: pointer; border-bottom: 4px solid transparent; }
+        .tab.active { border-bottom: 4px solid #f1c40f; color: #fff; background: #2c3e50; }
+
+        .panel { height: 48vh; background: #ecf0f1; overflow-y: auto; padding: 12px; display: none; }
+        .panel.active { display: block; }
+
+        .card { background: #fff; border-radius: 10px; padding: 12px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
+        .card-info h4 { margin: 0 0 4px 0; color: #2c3e50; font-size: 16px; }
+        .card-info p { margin: 0; font-size: 12px; color: #7f8c8d; }
+        .btn { background: #2ecc71; color: #fff; border: none; padding: 12px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; min-width: 110px; text-align: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn:active { transform: scale(0.95); }
+        .btn.ad-btn { background: linear-gradient(45deg, #8e44ad, #9b59b6); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: #2c3e50; color: #fff; padding: 25px; border-radius: 15px; text-align: center; width: 85%; max-width: 320px; border: 3px solid #f1c40f; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal h3 { margin-top: 0; color: #f1c40f; }
+        .modal p { font-size: 15px; line-height: 1.4; color: #ecf0f1; }
+        .modal .btn { width: 100%; margin-top: 15px; background: #f39c12; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="money">$<span id="money">0</span></div>
+        <div class="stats">Клик: $<span id="clickPower">1</span> | В сек: $<span id="passiveIncome">0</span></div>
+        <div id="boostStatus" style="display:none;" class="boost-active">🔥 БУСТ Х2 АКТИВЕН (<span id="boostTimer">0</span>с)</div>
+    </div>
+
+    <div class="game-area">
+        <div class="oil-rig" onclick="clickOil(event)">🛢️</div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('upgrades', this)">🛠️ Бизнес</div>
+        <div class="tab" onclick="switchTab('ads', this)">🎁 Бонусы (8)</div>
+    </div>
+
+    <div id="upgrades" class="panel active">
+        <div class="card"><div class="card-info"><h4>Улучшить бур</h4><p>+1$ к добыче за клик</p></div><button class="btn" onclick="buyClick()">$<span id="clickCost">10</span></button></div>
+        <div class="card"><div class="card-info"><h4>Нефтяная вышка</h4><p>Пассивно +5$ в секунду</p></div><button class="btn" onclick="buyRig()">$<span id="rigCost">50</span></button></div>
+        <div class="card"><div class="card-info"><h4>Нефтяной танкер</h4><p>Пассивно +50$ в секунду</p></div><button class="btn" onclick="buyTanker()">$<span id="tankerCost">500</span></button></div>
+        <div class="card"><div class="card-info"><h4>Нефтезавод</h4><p>Пассивно +300$ в секунду</p></div><button class="btn" onclick="buyPlant()">$<span id="plantCost">3500</span></button></div>
+    </div>
+
+    <div id="ads" class="panel">
+        <div class="card"><div class="card-info"><h4>🔥 Буст дохода Х2</h4><p>Удваивает весь доход на 60 сек</p></div><button class="btn ad-btn" onclick="watchAd(0)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>💼 Грант инвестора</h4><p>Мгновенно дает крупную сумму</p></div><button class="btn ad-btn" onclick="watchAd(1)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>⚡ Автокликер</h4><p>Сам качает нефть (30 сек)</p></div><button class="btn ad-btn" onclick="watchAd(2)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>🛠️ Модернизация бура</h4><p>+2$ к клику бесплатно</p></div><button class="btn ad-btn" onclick="watchAd(3)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>🏗️ Подарочная вышка</h4><p>+5$ в сек навсегда</p></div><button class="btn ad-btn" onclick="watchAd(4)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>🚢 Аренда танкера</h4><p>+50$ в сек навсегда</p></div><button class="btn ad-btn" onclick="watchAd(5)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>🎲 Секретный тендер</h4><p>Случайный куш до $10,000</p></div><button class="btn ad-btn" onclick="watchAd(6)">🎬 Смотреть</button></div>
+        <div class="card"><div class="card-info"><h4>👑 Процент в банке</h4><p>+20% к текущему балансу</p></div><button class="btn ad-btn" onclick="watchAd(7)">🎬 Смотреть</button></div>
+    </div>
+
+    <div class="modal-overlay" id="customModal">
+        <div class="modal">
+            <h3 id="modalTitle">Уведомление</h3>
+            <p id="modalText">Текст</p>
+            <button class="btn" onclick="closeModal()">ОК</button>
+        </div>
+    </div>
+
+    <script>
+        let game = { money: 0, clickPower: 1, passive: 0, clickCost: 10, rigCost: 50, tankerCost: 500, plantCost: 3500 };
+        let boostTime = 0, autoClickTime = 0;
+
+        if(localStorage.getItem('oilSaveV3')) {
+            game = Object.assign(game, JSON.parse(localStorage.getItem('oilSaveV3')));
+        }
+
+        function showModal(title, text) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalText').innerText = text;
+            document.getElementById('customModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+
+        function updateUI() {
+            let mult = boostTime > 0 ? 2 : 1;
+            document.getElementById('money').innerText = Math.floor(game.money);
+            document.getElementById('clickPower').innerText = game.clickPower * mult;
+            document.getElementById('passiveIncome').innerText = game.passive * mult;
+            document.getElementById('clickCost').innerText = game.clickCost;
+            document.getElementById('rigCost').innerText = game.rigCost;
+            document.getElementById('tankerCost').innerText = game.tankerCost;
+            document.getElementById('plantCost').innerText = game.plantCost;
+            
+            let boostDiv = document.getElementById('boostStatus');
+            if(boostTime > 0) {
+                boostDiv.style.display = 'block';
+                document.getElementById('boostTimer').innerText = boostTime;
+            } else { boostDiv.style.display = 'none'; }
+            localStorage.setItem('oilSaveV3', JSON.stringify(game));
+        }
+
+        function clickOil(e) {
+            let mult = boostTime > 0 ? 2 : 1;
+            let earned = game.clickPower * mult;
+            game.money += earned;
+            updateUI();
+
+            let el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = '+$' + earned;
+            let x = e && e.clientX ? e.clientX - 25 : window.innerWidth/2 - 20;
+            let y = e && e.clientY ? e.clientY - 40 : window.innerHeight/3;
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function buyClick() { if(game.money >= game.clickCost) { game.money -= game.clickCost; game.clickPower++; game.clickCost = Math.round(game.clickCost * 1.5); updateUI(); } }
+        function buyRig() { if(game.money >= game.rigCost) { game.money -= game.rigCost; game.passive += 5; game.rigCost = Math.round(game.rigCost * 1.6); updateUI(); } }
+        function buyTanker() { if(game.money >= game.tankerCost) { game.money -= game.tankerCost; game.passive += 50; game.tankerCost = Math.round(game.tankerCost * 1.7); updateUI(); } }
+        function buyPlant() { if(game.money >= game.plantCost) { game.money -= game.plantCost; game.passive += 300; game.plantCost = Math.round(game.plantCost * 1.8); updateUI(); } }
+
+        let adTimer = 0;
+        setInterval(() => {
+            let mult = boostTime > 0 ? 2 : 1;
+            game.money += game.passive * mult;
+            if(boostTime > 0) boostTime--;
+            updateUI();
+            adTimer++;
+            if(adTimer >= 120) { adTimer = 0; if(window.Android) window.Android.showInterstitial(); }
+        }, 1000);
+
+        setInterval(() => { if(autoClickTime > 0) { clickOil(null); autoClickTime -= 0.1; } }, 100);
+
+        function switchTab(id, tabEl) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            tabEl.classList.add('active');
+        }
+
+        function watchAd(index) {
+            if (window.Android) {
+                showModal("Загрузка рекламы...", "Пожалуйста, подождите пару секунд.");
+                window.Android.showRewarded(index);
+            } else {
+                showModal("Ошибка", "Запустите игру в APK приложении");
+            }
+        }
+
+        function onAdFailed(reason) {
+            showModal("Реклама еще не готова", "Попробуйте через пару секунд (" + reason + ")");
+        }
+
+        function giveReward(index) {
+            let msg = "";
+            switch(index) {
+                case 0: boostTime += 60; msg = "Доход удвоен на 60 секунд!"; break;
+                case 1: let g = Math.max(200, game.clickPower * 50 + game.passive * 30); game.money += g; msg = "Получен грант: $" + g; break;
+                case 2: autoClickTime += 30; msg = "Автокликер включен на 30 секунд!"; break;
+                case 3: game.clickPower += 2; msg = "Мощность бура увеличена на +2$!"; break;
+                case 4: game.passive += 5; msg = "Построена бесплатная вышка (+5$/сек)!"; break;
+                case 5: game.passive += 50; msg = "Получен нефтяной танкер (+50$/сек)!"; break;
+                case 6: let r = Math.floor(Math.random() * 10000) + 500; game.money += r; msg = "В секретном тендере выиграно: $" + r; break;
+                case 7: let b = Math.floor(game.money * 0.2); game.money += b; msg = "Банк начислил +20% ($" + b + ")!"; break;
+            }
+            updateUI();
+            showModal("🎉 Награда получена!", msg);
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
