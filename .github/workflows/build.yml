@@ -286,80 +286,6 @@ jobs:
             -keypass OilPass123 \
             -dname "CN=OilTycoon, OU=Games, O=OilMagnate, L=Moscow, S=Moscow, C=RU"
 
-      - name: Create App build.gradle (Auto-verify Yandex Mobile Ads SDK)
-        run: |
-          YANDEX_VER=$(python3 - << 'PYEOF'
-          import urllib.request, xml.etree.ElementTree as ET
-          target = "8.5.0"
-          try:
-              url = "https://repo1.maven.org/maven2/com/yandex/android/mobileads/maven-metadata.xml"
-              xml_data = urllib.request.urlopen(url, timeout=10).read()
-              root = ET.fromstring(xml_data)
-              versions = [v.text for v in root.findall(".//versions/version") if v.text]
-              release = root.findtext(".//release") or (versions[-1] if versions else "7.7.0")
-              if target in versions:
-                  print(target)
-              else:
-                  stable = [v for v in versions if "-" not in v]
-                  print(stable[-1] if stable else release)
-          except Exception:
-              print("7.7.0")
-          PYEOF
-          )
-          echo "Selected Yandex Mobile Ads SDK version: $YANDEX_VER"
-
-          cat << EOF > app/build.gradle
-          plugins {
-              id 'com.android.application'
-          }
-
-          android {
-              namespace 'com.oiltycoon.magnate'
-              compileSdk 34
-
-              defaultConfig {
-                  applicationId "com.oiltycoon.magnate"
-                  minSdk 24
-                  targetSdk 34
-                  versionCode 3
-                  versionName "2.2.0"
-              }
-
-              signingConfigs {
-                  release {
-                      storeFile file("../release-key.jks")
-                      storePassword "OilPass123"
-                      keyAlias "oilkey"
-                      keyPassword "OilPass123"
-                  }
-              }
-
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled false
-                      shrinkResources false
-                  }
-              }
-
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-
-              lint {
-                  checkReleaseBuilds false
-                  abortOnError false
-              }
-          }
-
-          dependencies {
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
-              implementation 'com.yandex.android:mobileads:${YANDEX_VER}'
-          }
-          EOF
-
       - name: Create AndroidManifest.xml (Кликер нефтяной магнат)
         run: |
           cat << 'EOF' > app/src/main/AndroidManifest.xml
@@ -604,8 +530,72 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Assemble Release APK
-        run: gradle assembleRelease --no-daemon
+      - name: Configure Build & Assemble Signed Release APK
+        run: |
+          write_build_gradle() {
+            local SDK_VER=$1
+            local COMPILE_SDK=$2
+            local KOTLIN_VER=$3
+            cat << EOF > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.oiltycoon.magnate'
+              compileSdk ${COMPILE_SDK}
+
+              defaultConfig {
+                  applicationId "com.oiltycoon.magnate"
+                  minSdk 24
+                  targetSdk ${COMPILE_SDK}
+                  versionCode 3
+                  versionName "2.2.0"
+              }
+
+              signingConfigs {
+                  release {
+                      storeFile file("../release-key.jks")
+                      storePassword "OilPass123"
+                      keyAlias "oilkey"
+                      keyPassword "OilPass123"
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                      shrinkResources false
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+
+              lint {
+                  checkReleaseBuilds false
+                  abortOnError false
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'org.jetbrains.kotlin:kotlin-stdlib:${KOTLIN_VER}'
+              implementation 'com.yandex.android:mobileads:${SDK_VER}'
+          }
+          EOF
+          }
+
+          echo "Attempting build with Yandex Mobile Ads SDK 8.5.0..."
+          write_build_gradle "8.5.0" "35" "2.0.21"
+          if ! gradle assembleRelease --no-daemon; then
+            echo "Fallback to stable verified Yandex Mobile Ads SDK 7.7.0..."
+            write_build_gradle "7.7.0" "34" "1.9.22"
+            gradle clean assembleRelease --no-daemon
+          fi
 
       - name: Upload Signed APK and Keystore
         uses: actions/upload-artifact@v4
